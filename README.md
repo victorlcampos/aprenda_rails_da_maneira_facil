@@ -37,12 +37,13 @@
     - [8.3.2. Usando rake routes](#832-usando-rake-routes)
   - [8.4. Escrevendo a primeira Action](#84-escrevendo-a-primeira-action)
   - [8.5. Escrevendo a primeira View](#85-escrevendo-a-primeira-view)
-- [9. Verificando a cobertura de Testes, Sintaxe e Desempenho](#9-verificando-a-cobertura-de-testes-sintaxe-e-desempenho)
+- [9. Verificando a cobertura de Testes, Sintaxe e Segurança](#9-verificando-a-cobertura-de-testes-sintaxe-e-segurança)
   - [9.1. O que são Gemas](#91-o-que-são-gemas)
-    - [9.1.1. Fontes que ajudam](#911-fontes-que-ajudam)
-  - [9.2. Simplecov](#92-simplecov)
-  - [9.3. Rubocop](#93-rubocop)
-  - [9.4. Breakman](#94-breakman)
+    - [9.1.1. RubyGems](#911-rubygems)
+    - [9.1.2. RubyToolbox](#912-rubytoolbox)
+  - [9.2. Cobertura de Teste](#92-cobertura-de-teste)
+  - [9.3. Análise Estática do Código](#93-análise-estática-do-código)
+  - [9.4. Segurança](#94-segurança)
 
 ## 1. Agradecimento
 
@@ -949,13 +950,15 @@ O tempo consideravelmente menor se dá pois o rails verifica na primeira vez que
 3. https://haml.info/
 4. https://github.com/caxlsx/caxlsx_rails
 
-## 9. Verificando a cobertura de Testes, Sintaxe e Desempenho
+## 9. Verificando a cobertura de Testes, Sintaxe e Segurança
 
 Até o momento, fizemos um desenvolvimento guiado pelo teste que escrevemos. Porém em projetos maiores, envolvendo vários desenvolvedores e algumas dezenas de milhares de linhas de código é fácil esquecer de testar algum if, ou mesmo ao refatorar uma parte do código, fazer com que ela deixe de ser coberta.
 
 Outro problema que também encontramos em projetos maiores do que o desse livro, são os desenvolvedores não seguindo um mesmo [estilo de código](https://github.com/rubocop/ruby-style-guide) (tamanho da identação, espaço depois da virgula, número de linhas entre os os métodos e outras boas práticas que parecem bobeira, mas que deixa o código mais legível).
 
-Para resolver esses problemas, o Rails disponibiliza gemas verificar a cobertura do seu código e fazer análise de código para saber se todos estão seguindo o estilo acordado.
+E por fim, é possível que até mesmo em projetos pequenos, o desenvolvedor se descuide e insira algum código vulnerável sem se dar conta.
+
+Para resolver esses problemas, a comunidade disponibiliza gemas que fazem análise do nosso código e geram os alertas necessários para que façamos as correções antes de entregar o software para o cliente final.
 
 ----
 
@@ -965,7 +968,7 @@ Para resolver esses problemas, o Rails disponibiliza gemas verificar a cobertura
 
 Conforme já falado anteriormente nesse livro, as gemas são nada mais do que uma forma de você encapsular e distribuir código ruby.
 
-Existem milhares (talvez milhões?) de gemas disponíveis para ajudar o desenvolvedor a atingir o seu objetivo.
+Existem milhares de gemas disponíveis para ajudar o desenvolvedor a atingir o seu objetivo.
 
 O próprio rails é uma gem, que por usa vez tem como dependência outras dezenas de gemas.
 
@@ -985,13 +988,287 @@ Por isso é sempre importante tentar ficar com o que o rails/ruby já fornecem p
 * https://stackoverflow.com/questions/56712510/github-warns-security-problem-about-omniauth-gem
 
 
-#### 9.1.1. Fontes que ajudam
+#### 9.1.1. RubyGems
 
-https://rubygems.org/gems
-https://www.ruby-toolbox.com/
+O site da [Rubygem](https://rubygems.org/gems) é o centralizador de todas as gemas públicas.
 
-### 9.2. Simplecov
+Se você olhar no seu arquivo ```Gemfile```, verá que a primeira linha dele é
 
-### 9.3. Rubocop
+```rb
+source 'https://rubygems.org'
+```
 
-### 9.4. Breakman
+Isso indica que quando o bundle for instalar uma gema, é no site rubygems que ele vai buscar.
+
+O problema é que o site Rubygem tem no máximo a lista das gemas mais baixadas, mas sem uma categorização ou outros dados importantes para escolhar qual gema colocar no projeto.
+
+---
+* https://rubygems.org/gems
+#### 9.1.2. RubyToolbox
+
+Por isso a comunidade criou o [Ruby Toolbox](https://www.ruby-toolbox.com/) para categorizar as Gemas e dar informações para você escolher qual gema utilizar.
+
+Nele é possível buscar gemas por categoria ou pelo nome da gema, mas compartar informações como a frequêcia de atualização, quantidade de projetos que usam a gema, entre outros pontos.
+
+---
+
+* https://www.ruby-toolbox.com/
+
+### 9.2. Cobertura de Teste
+
+Para começar nossa jornada com Gemas, iremos adicionar uma para verificar qual a nossa cobertura de testes do nosso projeto atual.
+
+Para isso, iremos entrar na categoria de [Cobertura de Testes (em inglês Code Coverage)](https://www.ruby-toolbox.com/categories/code_coverage) do Ruby Toolbox.
+
+![Categoria de cobertura de Teste](code_coverage.png)
+
+Como podemos ver, de longe a gema mais usada para essa categoria é a simplecov e é ela que vamos instalar no nosso projeto.
+
+Acessando a [página da gema](https://github.com/simplecov-ruby/simplecov) temos a seguinte instrução de instalação:
+
+Adicione no seu ```Gemfile``` a linha:
+
+```rb
+(...)
+gem 'simplecov', require: false, group: :test
+```
+
+Adicione no início do arquivo ```test/test_helper.rb```
+
+```rb
+require 'simplecov'
+SimpleCov.start 'rails'
+Rails.application.eager_load! # Necessário por conta do spring
+
+(...)
+```
+
+A última linha que adicionamos [é necessária](https://github.com/simplecov-ruby/simplecov#want-to-use-spring-with-simplecov) pois o Rails 6 utiliza o spring como forma de diminuir o tempo de Boot.
+
+Agora rode no terminar o comando
+
+```sh
+bundle install
+```
+
+E finalmente, execute os testes novamente
+
+```sh
+rails test
+  Finished in 0.202135s, 19.7887 runs/s, 39.5775 assertions/s.
+  4 runs, 8 assertions, 0 failures, 0 errors, 0 skips
+  simple_market_list/coverage. 15 / 15 LOC (100.0%) covered.
+```
+
+Nesse momento do projeto estamos com 100% de cobertura de teste.
+
+Para sabermos quais linhas estão cobertas e quais não estão, o Simplecov gera uma pasta chamada ```coverage``` e dentro dela existe um arquivo index.html que detalha exatamente o que já testamos.
+
+![Index do Simplecov](simplecov_coverage_index.png)
+
+Para garantir que a gente não perca a facha de 100% de cobertura, iremos mais uma configuração no simplecov.
+
+```rb
+require 'simplecov'
+
+SimpleCov.start 'rails' do
+  minimum_coverage 100
+end
+
+Rails.application.eager_load! # Necessário por conta do spring
+
+(...)
+```
+
+Assim, sempre que a gente esquecer de tester alguma linha, ele retornar um erro nos avisando disso.
+
+---
+
+* https://www.ruby-toolbox.com/categories/code_coverage
+* https://github.com/simplecov-ruby/simplecov
+* https://github.com/simplecov-ruby/simplecov#want-to-use-spring-with-simplecov
+
+### 9.3. Análise Estática do Código
+
+Uma segunda preocupação que temos que ter, é se todos estão usando a mesma convenção de código.
+Alguns exemplos mais simples são a utilização de 2 espaços e não 4 para identação, e pular sempre uma e não mais que uma linha entre os métodos.
+
+Usando o mesmo processo de buscar gemas do Simplecov, vamos olhar agora a categoria de [métricas de código (Code Metrics em Inglês)](https://www.ruby-toolbox.com/categories/code_metrics).
+
+![Métricas de Código Categoria](ruby_toolbox_code_metrics.png)
+
+Podemos ver que a Gema mais utilizada é a Rubocop, então é ela que vamos instalar no nosso projeto.
+
+Seguindo a [documentação oficial](https://github.com/rubocop/rubocop)
+
+No nosso arquivo ```Gemfile``` iremos adicionar a linha
+
+```rb
+gem 'rubocop', require: false
+gem 'rubocop-rails', require: false
+```
+
+Agora, podemos rodar o bundle install no terminal:
+
+```sh
+bundle install
+```
+
+Crie o arquivo ```.rubocop.yml``` na raiz do prjeto, é nele que vão as configurações do rubocop.
+
+E adicione a linha:
+
+```yml
+require: rubocop-rails
+```
+
+E por fim, rodar
+
+```sh
+rubocop
+  36 files inspected, 97 offenses detected, 90 offenses auto-correctable
+```
+
+Repare que o mesmo retornou que nosso código possui 97 ofensas ao [ruby style guide](https://github.com/rubocop/ruby-style-guide).
+
+Uma das funcionalidades do Rubocop é corrigir esses errors automaticamente quando possível.
+
+```sh
+rubocop -a
+  36 files inspected, 47 offenses detected, 41 more offenses can be corrected with `rubocop -A`
+```
+
+O comando -a corrige somente o que o rubocop considera seguro de corrigir, o -A corrige todos os problemas.
+
+Para o intuito desse livro, vamos rodar agora o -A. Para ocorrências futuras, recomendo sempre olhar exatamente o que será corrigido.
+
+```sh
+rubocop -A
+  36 files inspected, 85 offenses detected, 79 offenses corrected
+```
+
+Se rodarmos novamente iremos ver o que sobrará:
+
+```sh
+rubocop
+  36 files inspected, 6 offenses detected
+```
+
+Ele agora está reclamando que algumas classes do seu projeto não possuem documentação. Apesar de ser uma boa recomendação, vamos ignorar essa regra agora.
+
+Para isso, acesse o ```.rubocop.yml``` novamente e adicione as linhas:
+
+```yml
+(...)
+
+Style/Documentation:
+  Enabled: false
+```
+
+Rodando o rubocop novamente:
+
+```sh
+rubocop
+  config/environments/development.rb:21:6: C: Rails/FilePath: Please use Rails.root.join('path/to') instead
+  36 files inspected, 1 offenses detected
+```
+
+Por fim, o rubocop [mudou o entendimento dele](https://github.com/rubocop/rubocop-rails/issues/195) do que é esperado para a concatenar caminhos de arquivo.
+
+Apesar de entender o motivo pelo qual o rubocop mudou o ruby style guide, ainda prefiro (aqui entra gosto pessoal) o jeito antigo.
+
+Matendo a coerência do livro, podemos alterar o arquivo apontado ```config/environments/development.rb``` linha 21 para
+
+```rb
+  if Rails.root.join('tmp/caching-dev.txt').exist?
+```
+
+Caso você assim como eu, prefira a maneira antiga que estava sendo utilizada pelo próprio rails, podemos alterar a configuração do rubocop (```.rubocop.yml```) adicionando as linhas:
+
+
+```yml
+(...)
+Rails/FilePath:
+  EnforcedStyle: arguments
+  Enabled: true
+```
+
+Em ambas as situações agora teremos:
+
+```sh
+rubocop
+36 files inspected, no offenses detected
+```
+
+O importante é que no final, todos estejam usando a mesma forma e o rubocop garente isso.
+
+---
+* https://www.ruby-toolbox.com/categories/code_metrics
+* https://github.com/rubocop/rubocop
+* https://github.com/rubocop/ruby-style-guide
+* https://github.com/rubocop/rubocop-rails/issues/195
+
+### 9.4. Segurança
+
+Por último, é importante que garantir a segurança do projeto e que ninguém acabe adicionando de maneira intensional códigos que podem ser vulneráveis.
+
+Para garantir esse ponto, iremos entrar na categoria de [ferramentas de segurança (Security Tools em Inglês)](https://www.ruby-toolbox.com/categories/security_tools)
+
+
+![Ferramentas de segurança Categoria](ruby_toolbox_security_tools.png)
+
+Nesse caso, a Gema mais baixada não faz exatamente o que queremos, que é fazer uma análise estática do nosso código.
+
+Mas olhando a segunda gema, o [Brakeman](https://github.com/presidentbeef/brakeman), encontramos o que queremos.
+
+Usando o novamente a documentação oficial de instalação:
+
+Dentro do grupo development no ```Gemfile``` vamos adicionar a linha
+
+```rb
+gem 'brakeman'
+```
+
+Ficando assim:
+
+```rb
+group :development do
+  gem 'brakeman'
+  # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
+  gem 'web-console', '>= 4.1.0'
+  # Display performance information such as SQL time and flame graphs for each request in your browser.
+  # Can be configured to work on production as well see: https://github.com/MiniProfiler/rack-mini-profiler/blob/master/README.md
+  gem 'listen', '~> 3.3'
+  gem 'rack-mini-profiler', '~> 2.0'
+  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
+  gem 'spring'
+end
+```
+
+
+Rode o bundler
+
+```sh
+bundle install
+```
+
+E agora basta rodar o brakeman para verificar se alguma falha de segurança conhecida existe no nosso projeto até aqui:
+
+```sh
+brakeman
+  No warnings found
+```
+
+Para finalizar, vamos somente rodar os testes para ver se não quebramos nada.
+
+```sh
+rails test
+  4 runs, 8 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Ótimo, agora podemos seguir em frente com nosso código, pois temos as ferramentas necessárias para garantir que o projeto siga organizado, testado automaticamente e seguro.
+
+---
+
+* https://www.ruby-toolbox.com/categories/security_tools
+* https://github.com/presidentbeef/brakeman
