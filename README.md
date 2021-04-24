@@ -1,56 +1,54 @@
+<!-- omit in toc -->
 # Aprenda Rails da maneira Fácil
+<!-- omit in toc -->
 > Colocando a internet nos trilhos
 ----
 
-
+<!-- omit in toc -->
 ## Indice
 
-- [Aprenda Rails da maneira Fácil](#aprenda-rails-da-maneira-fácil)
-  - [> Colocando a internet nos trilhos](#-colocando-a-internet-nos-trilhos)
-  - [Indice](#indice)
-  - [Agradecimento](#agradecimento)
-  - [O motivo desse livro](#o-motivo-desse-livro)
-    - [A internet descarrilhou](#a-internet-descarrilhou)
-    - [Trazendo a simplicidade de Volta](#trazendo-a-simplicidade-de-volta)
-  - [Para quem é esse livro?](#para-quem-é-esse-livro)
-  - [Como ler esse livro?](#como-ler-esse-livro)
-    - [Pratico](#pratico)
-    - [Links de Referências](#links-de-referências)
-  - [Preparando o Ambiente](#preparando-o-ambiente)
-    - [Como instalar o Ruby](#como-instalar-o-ruby)
-      - [Windows](#windows)
-      - [Linux](#linux)
-    - [Como instalar o Rails](#como-instalar-o-rails)
-    - [Como instalar o NodeJS](#como-instalar-o-nodejs)
-    - [Editor de Código](#editor-de-código)
-      - [VSCode](#vscode)
-      - [Outros Editores](#outros-editores)
-  - [O projeto](#o-projeto)
-  - [Iniciando o projeto](#iniciando-o-projeto)
-    - [Estrutura de Diretórios](#estrutura-de-diretórios)
-  - [Tela de Listas de Mercado](#tela-de-listas-de-mercado)
-    - [Gerando o primeiro Controller](#gerando-o-primeiro-controller)
-      - [Explicando o conceito do Controller](#explicando-o-conceito-do-controller)
-    - [Escrevendo teste automatizado do Controller](#escrevendo-teste-automatizado-do-controller)
-      - [A importância dos Testes](#a-importância-dos-testes)
-    - [Roteando a requisição](#roteando-a-requisição)
-- [For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html](#for-details-on-the-dsl-available-within-this-file-see-httpsguidesrubyonrailsorgroutinghtml)
-      - [O que é uma API RESTFUL?](#o-que-é-uma-api-restful)
-      - [Usando rake routes](#usando-rake-routes)
-    - [Escrevendo a primeira Action](#escrevendo-a-primeira-action)
-    - [Escrevendo a primeira View](#escrevendo-a-primeira-view)
-  - [Verificando a cobertura de Testes, Sintaxe e Desempenho](#verificando-a-cobertura-de-testes-sintaxe-e-desempenho)
-    - [O que são Gemas](#o-que-são-gemas)
-      - [RubyGems Site](#rubygems-site)
-    - [Simplecov](#simplecov)
-    - [Rubocop](#rubocop)
-    - [Rack-mini-profiler](#rack-mini-profiler)
+- [1. Agradecimento](#1-agradecimento)
+- [2. O motivo desse livro](#2-o-motivo-desse-livro)
+  - [2.1. A internet descarrilhou](#21-a-internet-descarrilhou)
+  - [2.2. Trazendo a simplicidade de Volta](#22-trazendo-a-simplicidade-de-volta)
+- [3. Para quem é esse livro?](#3-para-quem-é-esse-livro)
+- [4. Como ler esse livro?](#4-como-ler-esse-livro)
+  - [4.1. Pratico](#41-pratico)
+  - [4.2. Links de Referências](#42-links-de-referências)
+- [5. Preparando o Ambiente](#5-preparando-o-ambiente)
+  - [5.1. Como instalar o Ruby](#51-como-instalar-o-ruby)
+    - [5.1.1. Windows](#511-windows)
+    - [5.1.2. Linux](#512-linux)
+  - [5.2. Como instalar o Rails](#52-como-instalar-o-rails)
+  - [5.3. Como instalar o NodeJS](#53-como-instalar-o-nodejs)
+  - [5.4. Editor de Código](#54-editor-de-código)
+    - [5.4.1. VSCode](#541-vscode)
+    - [5.4.2. Outros Editores](#542-outros-editores)
+- [6. O projeto](#6-o-projeto)
+- [7. Iniciando o projeto](#7-iniciando-o-projeto)
+  - [7.1. Estrutura de Diretórios](#71-estrutura-de-diretórios)
+- [8. Tela de Listas de Mercado](#8-tela-de-listas-de-mercado)
+  - [8.1. Gerando o primeiro Controller](#81-gerando-o-primeiro-controller)
+    - [8.1.1. Explicando o conceito do Controller](#811-explicando-o-conceito-do-controller)
+  - [8.2. Escrevendo teste automatizado do Controller](#82-escrevendo-teste-automatizado-do-controller)
+    - [8.2.1. A importância dos Testes](#821-a-importância-dos-testes)
+  - [8.3. Roteando a requisição](#83-roteando-a-requisição)
+    - [8.3.1. O que é uma API RESTFUL?](#831-o-que-é-uma-api-restful)
+    - [8.3.2. Usando rake routes](#832-usando-rake-routes)
+  - [8.4. Escrevendo a primeira Action](#84-escrevendo-a-primeira-action)
+  - [8.5. Escrevendo a primeira View](#85-escrevendo-a-primeira-view)
+- [9. Verificando a cobertura de Testes, Sintaxe e Desempenho](#9-verificando-a-cobertura-de-testes-sintaxe-e-desempenho)
+  - [9.1. O que são Gemas](#91-o-que-são-gemas)
+    - [9.1.1. Fontes que ajudam](#911-fontes-que-ajudam)
+  - [9.2. Simplecov](#92-simplecov)
+  - [9.3. Rubocop](#93-rubocop)
+  - [9.4. Breakman](#94-breakman)
 
-## Agradecimento
+## 1. Agradecimento
 
-## O motivo desse livro
+## 2. O motivo desse livro
 
-### A internet descarrilhou
+### 2.1. A internet descarrilhou
 
 A década de 2000 começou com o grande estouro da bolha “.com”, porém não foi esse evento que determinou o descarrilhamento da mesma, muito pelo contrário.
 
@@ -82,7 +80,7 @@ E a partir daí, o desenvolvimento web passou a ser reescrever libs para resolve
 
 4. https://medium.com/@jmanrubia/escaping-the-spa-rabbit-hole-with-turbolinks-903f942bf52c
 
-### Trazendo a simplicidade de Volta
+### 2.2. Trazendo a simplicidade de Volta
 
 O intuito desse livro é mostrar que a internet pode ser simples, que podemos voltar a desenvolver software focando no problema dos nossos clientes.
 
@@ -90,7 +88,7 @@ Que usando boas convenções para juntar bibliotecas e as funcionalidades que o 
 
 E mesmo assim entregar softwares que funcionam, são dinâmicos, responsivos e funcionam em varias plataformas.
 
-## Para quem é esse livro?
+## 3. Para quem é esse livro?
 
 Esse livro é para todos que acreditam em soluções simples e que desejam focar em gerar valor para seus clientes mais do que usar a tecnologia modinha do momento.
 
@@ -98,9 +96,9 @@ Não é necessário ter conhecimento prévio de Ruby, nem de como a internet fun
 
 Não iremos cobrir nesse livro a sintaxe em si, mas tentaremos escrever código tão simples que o básico de conhecimento prévio de programação já será o suficiente.
 
-## Como ler esse livro?
+## 4. Como ler esse livro?
 
-### Pratico
+### 4.1. Pratico
 
 Eu não sei se acredito na teoria das 10 mil horas, porém tenho plena convicção que programação é uma atividade que demanda prática. “Quando você já resolveu 1000 casos, fica fácil resolver o 1001” Sherlock Holmes
 
@@ -108,15 +106,15 @@ Por isso a ideia desse livro é que ele seja lido em frente a um computador, esc
 
 Iremos juntos concluir um projeto desde o seu início até o fim, passando por todo o desenvolvimento web, como fazer deploy até a geração de um aplicativo mobile.
 
-### Links de Referências
+### 4.2. Links de Referências
 
 No livro eu cobrirei o que é necessário para a conclusão do nosso projeto, porém todo capítulo terá seus links de referência para você se aprofundar mais no assunto caso ache necessário.
 
 Infelizmente a internet ainda é escrita primariamente em inglês, mas sempre que for possível irei procurar links que expliquem em português.
 
-## Preparando o Ambiente
+## 5. Preparando o Ambiente
 
-### Como instalar o Ruby
+### 5.1. Como instalar o Ruby
 
 O Ruby é uma linguagem dinâmica, fortemente tipada porém com tipagem implícita, conhecida por buscar [maximizar a felicidade do programador](https://rubyonrails.org/doctrine/#optimize-for-programmer-happiness). Foi criada em 1995, no Japão, mas mesmo assim ganhou o ocidente por conta da capacidade que ela dá para o desenvolvedor se expressar.
 
@@ -126,11 +124,11 @@ Difernete do Python que busca ter uma única maneira de fazer algo, o Ruby busca
 
 1. https://rubyonrails.org/doctrine/#optimize-for-programmer-happiness
 
-#### Windows
+#### 5.1.1. Windows
 
 Em construção...
 
-#### Linux
+#### 5.1.2. Linux
 
 Provavelmente esse vai ser o primeiro capitulo do livro que pode gerar um pouco de nariz torcido dentro da comunidade do Ruby. Grande parte de comunidade prefere usar o ruby através do [rbenv](https://github.com/rbenv/rbenv).
 
@@ -180,7 +178,7 @@ ruby --version
 1. https://medium.com/@phinfonet/primeiros-passos-com-ruby-instala%C3%A7%C3%A3o-com-rbenv-ab705559fc5c
 2. https://rvm.io/rvm/install
 
-### Como instalar o Rails
+### 5.2. Como instalar o Rails
 
 O [Rails](https://rubyonrails.org/) é um framework web MVC que é sem dúvida o carro chefe que move a comunidade ruby.
 
@@ -218,7 +216,7 @@ Iremos mais na frente aprender como gerenciar de forma mais eficiente as gemas q
 3. https://rubygems.org/
 4. https://guides.rubyonrails.org/getting_started.html#creating-a-new-rails-project-installing-rails
 
-### Como instalar o NodeJS
+### 5.3. Como instalar o NodeJS
 
 Apesar da comunidade de javascript ter, digamos, inovado além da conta. Eles criaram as melhoras ferramentas para lidar com o frontend (afinal foi para isso que o Javascript foi criado).
 
@@ -257,13 +255,13 @@ PS: Essa decisão de colocar o Webpack por padrão não veio [sem questionamento
 4. https://nodejs.org/en/download/package-manager/
 5. https://rossta.net/blog/why-does-rails-install-both-webpacker-and-sprockets.html
 
-### Editor de Código
+### 5.4. Editor de Código
 
 Uma dúvida que sempre escuto de pessoas que estão iniciando uma nova linguagem de programação, é qual a IDE utilizar para programar nessa linguagem.
 
 Para programar em Ruby, você não precisa de uma IDE que consuma mais memória do que o seu sistema operacional, um editor de texto, com destaque de sintaxe já é suficiente.
 
-#### VSCode
+#### 5.4.1. VSCode
 
 Porém na última década, os próprios editores de texto evoluiram e um deles, na minha humilde opinião, ganhou o espaço por balancear funcionalidades para o desenvolvedor e consumo de máquina.
 
@@ -276,7 +274,7 @@ Para instalar o VSCode basta entrar no site do mesmo https://code.visualstudio.c
 1. https://code.visualstudio.com/
 2. https://code.visualstudio.com/#alt-downloads
 
-#### Outros Editores
+#### 5.4.2. Outros Editores
 
 1. [**RubyMine**](https://www.jetbrains.com/pt-br/ruby/): Caso você procure um editor mais poderoso e esteja disposto a pagar por isso. O rubymine sem dúvida é o que há de melhor na comunidade.
 2. [**TextMate**](https://macromates.com/): Foi onde a comunidade começou. Editor de texto poderoso, extensível, mas que infelizmente só existe para o Mac.
@@ -293,7 +291,7 @@ Para instalar o VSCode basta entrar no site do mesmo https://code.visualstudio.c
 5. https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/
 6. https://www.gnu.org/software/emacs/
 
-## O projeto
+## 6. O projeto
 
 O projeto que iremos fazer durante os capítulos desse livro foi pensado para passar por diversas características diferentes que um software web pode ter.
 
@@ -301,7 +299,7 @@ Com isso é possível pegar o conhecimento adquirido nesse livro e transportar p
 
 Foi escolhido então o desafio de desenvolver uma lista de mercado, pois é um problema que acredito que grande parte dos leitores já teve e essa experiência prévia ajuda a pensar em nova funcionalidades para serem implementadas como treino a parte desse livro.
 
-## Iniciando o projeto
+## 7. Iniciando o projeto
 
 O rails vem com uma série de comandos de terminal que agilizam muito o desenvolvimento do sistema, o primeiro dele é o que gera o template de um novo projeto.
 
@@ -315,7 +313,7 @@ Com esse comando, o rails irá criar a estrutura de diretórios da sua aplicaç�
 
 1. https://guides.rubyonrails.org/getting_started.html#creating-the-blog-application
 
-### Estrutura de Diretórios
+### 7.1. Estrutura de Diretórios
 
 Ao entrar no diretório criado (simple_market_list), você verá que o rails já definiu uma série de pastas onde os seus códigos devem ir.
 
@@ -409,7 +407,7 @@ Durante a vida de um projeto, é comum que algumas dessas configurações sejam 
 
 Mas essa decisão de alteração deve ser tomada conforme o projeto cresce e suas especificidades vão surgindo, um desenvolvedor não deveria ter que se preocupar com elas antes mesmo de gerar uma única tela.
 
-## Tela de Listas de Mercado
+## 8. Tela de Listas de Mercado
 
 Agora que já estamos, no terminal, dentro da pasta do projeto, vamos iniciar o servidor
 
@@ -425,7 +423,7 @@ Agora entre no seu browser preferido e acesse a url: http://127.0.0.1:3000
 
 Pronto, agora podemos começar a escrever nossa própria aplicação.
 
-### Gerando o primeiro Controller
+### 8.1. Gerando o primeiro Controller
 
 O rails vem com uma série de geradores de código ([generators](https://guides.rubyonrails.org/command_line.html#bin-rails-generate)) que ajudam a gerar o código minimo que precisamos para uma determinada tarefa.
 
@@ -463,7 +461,7 @@ Para ter acesso a mais opções caso você queira evitar que alguns desses arqui
 
 1. https://guides.rubyonrails.org/command_line.html#bin-rails-generate
 
-#### Explicando o conceito do Controller
+#### 8.1.1. Explicando o conceito do Controller
 
 Conforme já falamos anteriormente, o controller é a cola entre o seu modelo e suas views. É ele quem vai receber as requisições http e decidir quais modelos chamar e quais views apresentar para o usuário.
 
@@ -478,7 +476,7 @@ Chamamos essa prática de ["Fat Model, Skinny Controller"](https://riptutorial.c
 1. https://riptutorial.com/ruby-on-rails/example/9609/fat-model--skinny-controller
 2. https://thoughtbot.com/blog/skinny-controllers-skinny-models
 
-### Escrevendo teste automatizado do Controller
+### 8.2. Escrevendo teste automatizado do Controller
 
 O próximo passo é escrever o teste automatizado para esse controller, nós queremos que o usuário ao entrar na url da raiz do projeto "/" ou a url "/market_lists" venha escrito "Suas listas de Mercado" e, por enquanto, "Você ainda não possui nenhuma lista".
 
@@ -578,7 +576,7 @@ Nesse momento nossos testes estão vermelhos e isso é o esperado.
 1. https://guides.rubyonrails.org/testing.html#functional-tests-for-your-controllers
 2. https://stackoverflow.com/questions/65479863/rails-6-1-ruby-3-0-0-tests-error-as-they-cannot-load-rexml
 
-#### A importância dos Testes
+#### 8.2.1. A importância dos Testes
 
 Apesar do Rails e seu criador ([@DHH](https://twitter.com/dhh)) [não pregarem](https://dhh.dk/2014/tdd-is-dead-long-live-testing.html) exatamente [Test-Driven-Development](https://martinfowler.com/bliki/TestDrivenDevelopment.html), ninguém na comunidade vai descordar da importância de se ter testes.
 
@@ -620,7 +618,7 @@ E vai ser seguindo essa ideia que vamos escrever o restante desse livro.
 2. https://dhh.dk/2014/tdd-is-dead-long-live-testing.html
 3. https://martinfowler.com/bliki/TestDrivenDevelopment.html
 
-### Roteando a requisição
+### 8.3. Roteando a requisição
 
 O caminho dos dados da sua aplicação começa sempre no routes.rb. É ele que o Rails vai olhar para saber para onde enviar a requisição HTTP que chegar no servidor.
 
@@ -636,11 +634,13 @@ Para isso, edite o seu arquivo routes.rb
 
 e adicione as linhas
 
+```rb
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   resources :market_lists
   root to: 'market_lists#index'
 end
+```
 
 E assim o Rails vai criar os mapeamentos necessários para o seu recurso de market_lists, gerando uma API Restful.
 
@@ -650,7 +650,7 @@ Para saber mais sobre as rotas:
 
 1. https://guides.rubyonrails.org/routing.html
 
-#### O que é uma API RESTFUL?
+#### 8.3.1. O que é uma API RESTFUL?
 
 A arquitetura de comunicação REST foi proposta por Roy Fielding em sua tese de [doutorado em 2000](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm).
 
@@ -752,7 +752,7 @@ Como esperado, o Rails já vem preparado para ajudar vocês fazer a sua aplicaç
 2. https://martinfowler.com/articles/richardsonMaturityModel.html
 
 
-#### Usando rake routes
+#### 8.3.2. Usando rake routes
 
 Para verificar quais rotas foram geradas pelo Rails na etapa anterior, o mesmo fornece um atalho no terminal
 
@@ -799,7 +799,7 @@ rails test
 
 E você vai ver que agora o erro que vai ser dado é que a action não está definida no seu controller.
 
-### Escrevendo a primeira Action
+### 8.4. Escrevendo a primeira Action
 
 As actions nada mais são do que os métodos dos controllers, elas podem ter qualquer nome, porém é uma boa prática que os controllers possuam no máximo as seguintes actions:
 
@@ -855,7 +855,7 @@ Agora os testes apontam que ele não encontrou o template no formato html para r
 1. http://jeromedalbert.com/how-dhh-organizes-his-rails-controllers/
 
 
-### Escrevendo a primeira View
+### 8.5. Escrevendo a primeira View
 
 Aqui entramos novamente em convenção sobre configuração.
 
@@ -949,7 +949,7 @@ O tempo consideravelmente menor se dá pois o rails verifica na primeira vez que
 3. https://haml.info/
 4. https://github.com/caxlsx/caxlsx_rails
 
-## Verificando a cobertura de Testes, Sintaxe e Desempenho
+## 9. Verificando a cobertura de Testes, Sintaxe e Desempenho
 
 Até o momento, fizemos um desenvolvimento guiado pelo teste que escrevemos. Porém em projetos maiores, envolvendo vários desenvolvedores e algumas dezenas de milhares de linhas de código é fácil esquecer de testar algum if, ou mesmo ao refatorar uma parte do código, fazer com que ela deixe de ser coberta.
 
@@ -961,15 +961,37 @@ Para resolver esses problemas, o Rails disponibiliza gemas verificar a cobertura
 
 1. https://github.com/rubocop/ruby-style-guide
 
-### O que são Gemas
+### 9.1. O que são Gemas
 
-#### RubyGems Site
+Conforme já falado anteriormente nesse livro, as gemas são nada mais do que uma forma de você encapsular e distribuir código ruby.
+
+Existem milhares (talvez milhões?) de gemas disponíveis para ajudar o desenvolvedor a atingir o seu objetivo.
+
+O próprio rails é uma gem, que por usa vez tem como dependência outras dezenas de gemas.
+
+A sua utilização varia de coisas complexas como frameworks, até coisas mais simples como, fazer chamadas http, ou fazer conexão com bancos diferentes.
+
+Porém tome cuidado, é comum as pessoas iniciando no mundo do rails buscarem gemas para resolver todos os problemas e possivelmente vão achar uma que realmente resolva.
+
+Mas cada nova dependência no seu projeto é uma possível fonte de problema no futuro para [atualizar o código](https://github.blog/2020-08-25-upgrading-github-to-ruby-2-7/), [compatibilidade de licença](https://dev.to/cseeman/what-s-up-with-mimemagic-breaking-everything-he1) ou possível [falha de segurança](https://stackoverflow.com/questions/56712510/github-warns-security-problem-about-omniauth-gem).
+
+Por isso é sempre importante tentar ficar com o que o rails/ruby já fornecem para você, mas caso tenha algo em específico que você precisa, verificar se a gema ainda é mantida, tem um aval da comunidade são boas práticas para escolher qual dependência adicionar no seu projeto.
+
+———
+
+* https://github.blog/2020-08-25-upgrading-github-to-ruby-2-7/
+* https://github.blog/2018-09-28-upgrading-github-from-rails-3-2-to-5-2/
+* https://dev.to/cseeman/what-s-up-with-mimemagic-breaking-everything-he1
+* https://stackoverflow.com/questions/56712510/github-warns-security-problem-about-omniauth-gem
+
+
+#### 9.1.1. Fontes que ajudam
 
 https://rubygems.org/gems
 https://www.ruby-toolbox.com/
 
-### Simplecov
+### 9.2. Simplecov
 
-### Rubocop
+### 9.3. Rubocop
 
-### Rack-mini-profiler
+### 9.4. Breakman
