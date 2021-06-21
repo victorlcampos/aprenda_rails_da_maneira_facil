@@ -21,9 +21,10 @@
     - [5.1.2. Linux](#512-linux)
   - [5.2. Como instalar o Rails](#52-como-instalar-o-rails)
   - [5.3. Como instalar o NodeJS](#53-como-instalar-o-nodejs)
-  - [5.4. Editor de Código](#54-editor-de-código)
-    - [5.4.1. VSCode](#541-vscode)
-    - [5.4.2. Outros Editores](#542-outros-editores)
+  - [5.4. Como Instalar o SQLite](#54-como-instalar-o-sqlite)
+  - [5.5. Editor de Código](#55-editor-de-código)
+    - [5.5.1. VSCode](#551-vscode)
+    - [5.5.2. Outros Editores](#552-outros-editores)
 - [6. O projeto](#6-o-projeto)
 - [7. Iniciando o projeto](#7-iniciando-o-projeto)
   - [7.1. Estrutura de Diretórios](#71-estrutura-de-diretórios)
@@ -44,6 +45,26 @@
   - [9.2. Cobertura de Teste](#92-cobertura-de-teste)
   - [9.3. Análise Estática do Código](#93-análise-estática-do-código)
   - [9.4. Segurança](#94-segurança)
+- [10. Adicionando uma nova lista](#10-adicionando-uma-nova-lista)
+  - [10.1. Gerando o primeiro modelo](#101-gerando-o-primeiro-modelo)
+    - [10.1.1. Explicando Migrações](#1011-explicando-migrações)
+  - [10.2. Navegando Entre Views](#102-navegando-entre-views)
+    - [10.2.1. Adicionando testes ao controller](#1021-adicionando-testes-ao-controller)
+    - [10.2.2. Helpers](#1022-helpers)
+    - [10.2.3. Código embarcado na View](#1023-código-embarcado-na-view)
+  - [10.3. Salvando no Banco](#103-salvando-no-banco)
+    - [10.3.1. Validações](#1031-validações)
+    - [10.3.2. Callbacks](#1032-callbacks)
+    - [10.3.3. Voltando ao controller](#1033-voltando-ao-controller)
+    - [10.3.4. Redirecionando a Requisição](#1034-redirecionando-a-requisição)
+- [11. Buscando no Banco](#11-buscando-no-banco)
+- [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
+  - [12.1. Buscando um único registro no banco](#121-buscando-um-único-registro-no-banco)
+    - [12.1.1. Adicionando novos testes no controller](#1211-adicionando-novos-testes-no-controller)
+    - [12.1.2. Alterando a view](#1212-alterando-a-view)
+    - [12.1.3. Usando o find](#1213-usando-o-find)
+  - [12.2. Partials](#122-partials)
+    - [12.2.1. Retirando duplicidade das views](#1221-retirando-duplicidade-das-views)
 
 ## 1. Agradecimento
 
@@ -256,13 +277,14 @@ PS: Essa decisão de colocar o Webpack por padrão não veio [sem questionamento
 4. https://nodejs.org/en/download/package-manager/
 5. https://rossta.net/blog/why-does-rails-install-both-webpacker-and-sprockets.html
 
-### 5.4. Editor de Código
+### 5.4. Como Instalar o SQLite
+### 5.5. Editor de Código
 
 Uma dúvida que sempre escuto de pessoas que estão iniciando uma nova linguagem de programação, é qual a IDE utilizar para programar nessa linguagem.
 
 Para programar em Ruby, você não precisa de uma IDE que consuma mais memória do que o seu sistema operacional, um editor de texto, com destaque de sintaxe já é suficiente.
 
-#### 5.4.1. VSCode
+#### 5.5.1. VSCode
 
 Porém na última década, os próprios editores de texto evoluiram e um deles, na minha humilde opinião, ganhou o espaço por balancear funcionalidades para o desenvolvedor e consumo de máquina.
 
@@ -275,7 +297,7 @@ Para instalar o VSCode basta entrar no site do mesmo https://code.visualstudio.c
 1. https://code.visualstudio.com/
 2. https://code.visualstudio.com/#alt-downloads
 
-#### 5.4.2. Outros Editores
+#### 5.5.2. Outros Editores
 
 1. [**RubyMine**](https://www.jetbrains.com/pt-br/ruby/): Caso você procure um editor mais poderoso e esteja disposto a pagar por isso. O rubymine sem dúvida é o que há de melhor na comunidade.
 2. [**TextMate**](https://macromates.com/): Foi onde a comunidade começou. Editor de texto poderoso, extensível, mas que infelizmente só existe para o Mac.
@@ -1272,3 +1294,798 @@ rails test
 
 * https://www.ruby-toolbox.com/categories/security_tools
 * https://github.com/presidentbeef/brakeman
+
+## 10. Adicionando uma nova lista
+
+Agora que já temos nossa tela de listas de mercado pronta, temos que permitir que o usuário adicione uma nova lista de mercado.
+
+Para isso vamos precisar ter uma tabela no nosso banco de dados onde iremos salvar essas informações.
+
+### 10.1. Gerando o primeiro modelo
+
+O Rails já vem preparado para lidar com a camada de modelo e juntamente com ela a conexão com o banco de dados.
+
+O [ORM (Object Relational Mapper)](https://pt.wikipedia.org/wiki/Mapeamento_objeto-relacional) padrão do Rails se chama Active Record que é o mesmo nome do Padrão de Projeto que ele segue.
+
+Resumidamente, o Active Record é um padrão de projeto que define o acesso/manipulação de uma tabela do banco de dados através de uma classe que garante que quando um objeto daquela classe é atualizado, a sua linha correspondente do banco de dados também é atualizada.
+
+O Rails, assim como para o controller, possui um [gerador](https://guides.rubyonrails.org/getting_started.html#mvc-and-you-generating-a-model) para criar uma nova classe de modelo.
+
+```sh
+rails g model market_list
+  Running via Spring preloader in process 469287
+        invoke  active_record
+        create    db/migrate/xxxxxxx_create_market_lists.rb
+        create    app/models/market_list.rb
+        invoke    test_unit
+        create      test/models/market_list_test.rb
+        create      test/fixtures/market_lists.yml
+```
+
+Repare que, diferente do controller, usamos o nome do modelo no **singular**.
+
+Isso também é uma conversão do Rails, usuando o nome do modelo no singular, o Rails sabe por padrão qual tabela buscar no banco de dados.
+
+Por padrão, a Tabela no banco será o nome do modelo no **plural** -.-. (Essa é para mim a pior convensão do Rails, mas as coisas são como elas são).
+
+Abrindo o arquivo gerado ```app/models/market_list.rb``` que representa nosso modelo.
+
+```rb
+class MarketList < ApplicationRecord
+end
+```
+
+Vemos que ele é simplesmente uma classe vazia, que estende ```ApplicationRecord```.
+
+Abrindo o nosso arquivo ```app/models/application_record.rb```
+
+```rb
+# frozen_string_literal: true
+
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+end
+```
+
+Vamos que ele só é um arquivo que por sua vez estende ```ActiveRecord::Base```
+
+Que é a classe padrão do Rails que encapsula o padrão de projeto ```ActiveRecord```.
+
+O ```ApplicationRecord``` existe para caso você precise adicionar alguma lógica que se aplique a todos os seus modelos, não iremos alterar esse artigo nesse livro (nunca alterei ele em nenhum projeto).
+
+É possível usar outros ORMs no Rails, como específicos para trabalhar com bancos de dados não relacional como [MongoDB](https://github.com/mongodb/mongoid), entre outros. Mas aconselho a usar o ActiveRecord e Banco de Dados relacional. Vai poupar você de muitas dores de cabeça.
+
+----
+
+1. https://pt.wikipedia.org/wiki/Mapeamento_objeto-relacional
+2. https://pt.wikipedia.org/wiki/Active_record
+3. https://guides.rubyonrails.org/getting_started.html#mvc-and-you-generating-a-model
+4. https://github.com/mongodb/mongoid
+
+#### 10.1.1. Explicando Migrações
+
+O primeiro arquivo gerado que vamos alterar é o de migrações. As migrações falam para o Rails como ele deve alterar o nosso banco de dados.
+
+A vantagem de usar migrações e não diretamente SQL para realizar a alteração do nosso banco, é que migrações são agnósticas em relação a banco.
+
+Com isso escrevemos código **ruby** e o Rails cuida de gerar o SQL necessário para o banco que você estiver usando.
+
+Vale reforsar que seu modelo não está ligado a migração, e sim ao banco. As vezes vejo essa dúvida nas pessoas que estão iniciando no Rails.
+
+Se você tiver um banco já preenchido de um outro projeto, que usa zero de Ruby, com uma tabela X e apontar o seu modelo para essa tabela. Os dois vão estar "magicamente" ligados pela conversão sobre configuração.
+
+Abrindo o arquivo ```db/migrate/xxxxxxx_create_market_lists.rb``` teremos:
+
+```rb
+class CreateMarketLists < ActiveRecord::Migration[6.1]
+  def change
+    create_table :market_lists do |t|
+
+      t.timestamps
+    end
+  end
+end
+```
+
+Esse arquivo nada mais é do que uma classe que estende [```ActiveRecord::Migration```](https://guides.rubyonrails.org/active_record_migrations.html), que por sua vez define diversos métodos de manipulação de banco de dados.
+
+Entre os métodos, temos o ```create_table```, que você pode deduzir que cria uma tabela no banco, no nosso caso, a tabela ```market_lists```.
+
+Por padrão, ele já cria a coluna ```id``` como [chave primária](https://pt.wikipedia.org/wiki/Chave_prim%C3%A1ria).
+
+O método ```create_table``` recebe como parâmetro um bloco de código, que tem como o intuito descrever quais colunas a tabela terá.
+
+O ```t.timestamps``` cria a coluna ```created_at``` que será preenchida com o horário que a nova linha da tabela entrar e a coluna ```updated_at``` que terá o dado da última vez que a linha foi editada. Isso tudo já garantidos só pelo ORM do Rails.
+
+Se você precisar de mais dados de [auditoria](https://www.ruby-toolbox.com/categories/Active_Record_Versioning), existem gemas para isso.
+
+Voltando ao nosso projeto, um dados que queremos salvar na nossa lista de mercado é a data que o mercado irá ocorrer e um nome para ajudar o usuário identificar qual lista se trata para caso ele tenha duas no mesmo dia (Meu pai por exemplo faz Feira e Mercado no mesmo dia, ele precisaria dessa funcionalidade).
+
+Além disso, também queremos garantir a integridade dos dados e que o banco de dados não aceite uma data em branco.
+
+```rb
+class CreateMarketLists < ActiveRecord::Migration[6.1]
+  def change
+    create_table :market_lists do |t|
+      t.string :name
+      t.date :market_date, null: false
+      t.timestamps
+    end
+  end
+end
+```
+
+Com isso, a migração irá criar 2 colunas no nosso banco, além das colunas do ```timestamps``` faladas anteriormente.
+
+A coluna name, do tipo string, o que se traduz na maioria dos bancos como tipo VARCHAR, o que limita o tamanho da coluna em 255 caracteres.
+
+E a coluna market_date, do tipo date.
+
+Para excutar a migração, temos que rodar:
+
+```sh
+rails db:migrate
+  == xxxxxxx CreateMarketLists: migrating ================================
+  -- create_table(:market_lists)
+    -> 0.0017s
+  == xxxxxxx CreateMarketLists: migrated (0.0018s) =======================
+```
+
+E agora temos a nossa tabela criada. O rails mantem o arquivo ```schema.rb``` atualizado mostrando como o seu banco se encontra.
+
+```rb
+(...)
+
+ActiveRecord::Schema.define(version: 2021_05_22_210633) do
+  create_table "market_lists", force: :cascade do |t|
+    t.string "name"
+    t.date "market_date", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+end
+```
+
+E ele é uma ótima fonte para você saber quais colunas um determinado modelo/tabela (a partir de agora, os 2 são 1) possui.
+
+Caso você verifique algum erro na sua migração e queira desfazer a mesma, existe o comando ```rails db:rollback```. Mas se use se você tiver certeza que ninguém mais pegou o código da migração incorreta, se não, prefira criar uma migração nova corrigindo a anterior.
+
+O último ponto que queria chamar atenção nesse capítulo é que estou escrevendo as colunas e tabelas (e o código no geral) em inglês e não português. Não vou me estender explicando o porque isso é uma boa prática **(Só faça)**, mas caso você queira se aprofundar no assunto, aconselho o artigo [Tradução: Por que você não deve codificar em Português](https://www.akitaonrails.com/2008/07/31/tradu-o-por-que-voc-n-o-deve-codificar-em-portugu-s) do Akita.
+
+---
+
+1. https://guides.rubyonrails.org/active_record_migrations.html
+2. https://pt.wikipedia.org/wiki/Chave_prim%C3%A1ria
+3. https://www.ruby-toolbox.com/categories/Active_Record_Versioning
+4. https://www.akitaonrails.com/2008/07/31/tradu-o-por-que-voc-n-o-deve-codificar-em-portugu-s
+
+### 10.2. Navegando Entre Views
+
+Agora que já temos nossa tabela no banco, vamos criar nosso formulário para permitir o usuário cadastrar uma nova lista.
+
+O que queremos é:
+
+1) O usuário tenha um botão de "Nova Lista" na tela de Lista
+2) Ao entrar na rota /new, o usuário verá o formulário com o nome e a data
+3) E ao submeter o formulário
+   1) Uma nova lista será salva no banco se uma data estiver preenchida
+   2) Uma mensagem de aviso ao usuário se a data estiver em branco
+
+Para isso, vamos começar como deve ser feito, pelos **testes**.
+
+#### 10.2.1. Adicionando testes ao controller
+
+O controller que vamos usar, ainda é o ```MarketListsController```, então iremos adicionar os nossos testes no ```MarketListsControllerTest```.
+
+```rb
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class MarketListsControllerTest < ActionDispatch::IntegrationTest
+  (...)
+
+  test 'User should have new button on market list index' do
+    get market_lists_path
+    assert_response :success
+    assert_select 'a', text: 'Nova lista de Mercado'
+  end
+
+  test 'User should fill name and date on new form' do
+    get new_market_list_path
+    assert_response :success
+    assert_select 'input[name=\'\']'
+    assert_select 'input[name=\'\']'
+    assert_select 'form[action=\'/market_lists\']'
+  end
+end
+```
+
+Para esse caso, iremos passar diretamente o arquivo de teste, para executar somente o arquivo em específico:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 0 assertions, 0 failures, 6 errors, 0 skips
+  ActiveRecord::NotNullViolation: RuntimeError: NOT NULL constraint failed: market_lists.market_date
+```
+
+Isso se deve, pois, antes de executar cada teste, o rails tenta carregar os arquivos da pasta ```fixtures``` para o banco de dados de teste.
+
+Olhando o arquivo que temos dentro dela:
+
+```test/fixtures/market_lists.yml```
+```yml
+  # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+  # This model initially had no columns defined. If you add columns to the
+  # model remove the '{}' from the fixture names and add the columns immediately
+  # below each fixture, per the syntax in the comments below
+  #
+  one: {}
+  # column: value
+  #
+  two: {}
+  # column: value
+```
+
+Como o próprio Rails recomenda, aconselho der a documentação em [```https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html```](https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html), mas o básico que você precisa saber é:
+
+O Rails vai pegar cada chave e tentar salvar no banco. Como as nossas chaves estão em branco, ele tenta criar uma linha em branco no banco de dados. Mas definimos na nossa migração que o campo ```market_date``` não pode ser nulo. Então o próprio banco de dados vai rejeitar a inserção.
+
+A ideia da Fixtures é que você consiga montar os cenários de testes que o seu banco precisa ter para reproduzir as situações dos usuários.
+
+Para corrigir esses errors, vamos editar o arquivo para:
+
+```yml
+(...)
+one:
+  market_date: '2021-01-01'
+
+two:
+  market_date: '2020-01-01'
+```
+
+Agora podemos rodar o teste novamente:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 10 assertions, 1 failures, 1 errors, 0 skips
+```
+
+Agora todos os erros são exatamente os esperados, não temos ainda a action ```new``` no controller e o link que levaria para essa página também ainda não existe na view.
+
+---
+
+1. https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+#### 10.2.2. Helpers
+
+O rails fornece uma serie de facilitadores ([helpers](https://guides.rubyonrails.org/form_helpers.html)) que ajudam você a montar a sua view de maneira mais rápida se segura. Os Helpers nada mais são do que código ruby que retornam html para serem renderizados pelo browser.
+
+Os helpers são uma parte importante do rails, eles permitem criar links de maneira simplificada passando as contantes de url que são geradas pelo ```router```, ou até mesmo formulários, onde os ```name``` dos inputs já são gerados no formato que facilita pegar os dados no nosso controlador.
+
+Além de garantir a segurança, como a geração de um [```csrf token```](https://guides.rubyonrails.org/security.html#cross-site-request-forgery-csrf) que impede que um formulário seja submetido por uma outra página.
+
+Também é possível criar seus próprios helpers. Na verdade, quando o controller foi gerado, o gerador também criou o arquivo ```app/helpers/market_lists_helper.rb``` para você definir o helper padrão.
+
+---
+
+1. https://guides.rubyonrails.org/form_helpers.html
+2. https://guides.rubyonrails.org/security.html#cross-site-request-forgery-csrf
+
+#### 10.2.3. Código embarcado na View
+
+Conforme já falamos anteriormente, usamos o préprocessador ERB nas nossas views, ele permite chamar código ruby na view de 2 maneiras diferentes:
+
+```<%= %>``` ou ```<% %>```
+
+O primeiro coloca na view o resultado da linha ruby executada, o segundo somente executa a linha.
+
+Resumidamente, quando queremos que o usuário final tenha que ver o resultado do código ruby, devemos usar o <%=, quando não, o <%.
+
+Vamos usar o poder do ERB, junto com o Helper, para colocar o link para o usuário clicar e ir para a nossa tela de new.
+
+Abra o arquivo ```app/views/market_lists/index.html```, renomea-lo para ```app/views/market_lists/index.html.erb``` e modificar o conteúdo para:
+
+```erb
+<h1>Suas listas de Mercado</h1>
+<%= link_to 'Nova lista de Mercado', new_market_list_path %>
+<p>Você ainda não possui nenhuma lista</p>
+```
+
+O helper que usamos foi o [```link_to```](https://api.rubyonrails.org/v5.2.3/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to), ele gera uma tag ```<a>``` (que é o link do html) apontando para a url que passamos como segundo parâmetro.
+
+Para ver ele funcionando, vamos executar o servidor com o ```rails s```
+
+![Novo Link para a lista](new_market_list_link.png)
+
+Vamos rodar agora o nosso teste para ver se o mesmo está verde:
+
+```
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 10 assertions, 0 failures, 1 errors, 0 skips
+```
+
+Perfeito, agora só temos o erro que a ação ```new``` não existe.
+
+Para resolver esse erro, vamos no nosso controller ```MarketListsController```
+
+e adicionar
+
+```
+# frozen_string_literal: true
+
+class MarketListsController < ApplicationController
+  (...)
+  def new; end
+end
+```
+
+Ao rodar os testes
+
+```
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 10 assertions, 0 failures, 1 errors, 0 skips
+```
+
+Temos agora o erro que a view do ```new``` não existe. Para resolver esse erro vamos criar o arquivo ```app/views/market_lists/new.html.erb```.
+
+
+Rodando os testes novamente, temos o erro que na tela não tem os inputs que precisamos.
+
+Vamos agora adiciona o formulário na tela. Para isso, iremos usar agora o ```helper``` [```form_for```](https://api.rubyonrails.org/v5.2/classes/ActionView/Helpers/FormHelper.html#method-i-form_for)
+
+Iremos editar a nossa view para
+
+```erb
+<h2>Nova Lista</h2>
+
+<%= form_for @market_list do |f| %>
+  <label>Nome</label>: <%= f.text_field :name %>
+  <br />
+  <label>Data</label>: <%= f.date_field :market_date %>
+  <br />
+  <%= f.submit %>
+<% end %>
+```
+
+E nossa
+
+Para ver como a mesma está ficando, vamos rodar o servidor:
+
+```sh
+rails s
+```
+
+![Novo formulário de lista de Mercado](new_market_list_form.png)
+
+Nesse momento vale a pena dar uma olhada no código gerado. Como estou usando o chrome, bastou pertar botão direito em um dos inputs e clicar em ```inspecionar elemento```.
+
+```html
+<form action="/market_lists/new" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="-QpO38B9pKmWed307gqQJSkYrBgz3Aej1ZD_xONlbzuzIHHJ7LLfsoJhY2NMg9lS88BjTiZyPZc7FG2yNxdpnA">
+  <label>Nome</label>: <input type="text" name="market_list[name]" id="market_list_name">
+  <br>
+  <label>Data</label>: <input type="date" name="market_list[market_date]" id="market_list_date">
+  <br>
+
+  <input type="submit" name="commit" value="Save Market list" data-disable-with="Save Market list">
+</form>
+```
+
+Repere como o ```helper``` adicionou um input do tipo hidden para segurançã e gerou os inputs com os names corretos, além do input do tipo submit gerado com diversos parâmetros.
+
+Os helpers do rails existem justamente para facilitar essa geração de html.
+
+Rodando os testes novamente
+
+```
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 10 assertions, 0 failures, 1 errors, 0 skips
+```
+
+Mesmo **erro** de antes. Se reparar nos testes, vai ver que o name='' está em branco. O motivo disso é que antes deu escrever a tela, eu não tinha certeza do name que seria gerado. É o tipo de coisa que eu não perco tempo "decorando". Por mais que escrever o teste antes do código seja uma boa prática, no dia a dia nem sempre é possível.
+
+Agora que vimos o código gerado, e ter essa possibilidade é [muito importante](https://m.signalvnoise.com/paying-tribute-to-the-web-with-view-source/), podemos substituir nos testes, edite o ```test/controllers/market_lists_controller_test.rb```
+
+```rb
+test 'User should fill name and date on new form' do
+  get new_market_list_path
+  assert_response :success
+  assert_select 'input[name=\'market_list[name]\']'
+  assert_select 'input[name=\'market_list[market_date]\']'
+  assert_select 'form[action=\'/market_lists\']'
+end
+```
+
+Rodando os testes novamente.
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+6 runs, 12 assertions, 1 failures, 0 errors, 0 skips
+```
+
+Agora nosso teste está apontando que nosso formulário está apontando para a URL errada. Isso porque nós não passamos um objeto da classe MarketList para o form_for.
+
+Vamos editar a actio ```new``` do nosso controller ```MarketListsController``` para:
+
+```rb
+  def new
+    @market_list = MarketList.new
+  end
+```
+
+E nossa view para:
+
+```erb
+<h2>Nova Lista</h2>
+
+<%= form_for @market_list do |f| %>
+  <label>Nome</label>: <%= f.text_field :name %>
+  <br />
+  <label>Data</label>: <%= f.date_field :market_date %>
+  <br />
+  <%= f.submit %>
+<% end %>
+```
+
+Olhando o código gerado:
+
+```html
+<form class="new_market_list" id="new_market_list" action="/market_lists" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="E1jW2-80-yH__HHmBdL4CcoQqPEiRywV-nwJrBy87xRZcunNw_uAOuvkz3GnW7F-EMhnpzfpFiEU-JvayM7psw">
+  <label>Nome</label>: <input type="text" name="market_list[name]" id="market_list_name">
+  <br>
+  <label>Data</label>: <input type="date" name="market_list[market_date]" id="market_list_market_date">
+  <br>
+  <input type="submit" name="commit" value="Create Market list" data-disable-with="Create Market list">
+</form>
+```
+
+Perfeito, agora a action está apontando para a url da nossa action ```create```, tudo através do poder da convenção sobre configuração do rails.
+
+Rodando os testes novamente:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+  6 runs, 14 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Repare que o nosso % de cobertura de testes caiu, até o momento da escrita desse livro, o simplecov estava com um [bug](https://github.com/simplecov-ruby/simplecov/issues/994) por conta que o Rails roda testes em [paralelo](https://edgeguides.rubyonrails.org/testing.html#parallel-testing).
+
+Se no momento que você estiver lendo o livro o problema percistir, basta comentar a linha ```parallelize(workers: :number_of_processors)``` do arquivo ```test/test_helper.rb```
+
+Agora temos tudo no lugar para salvar os dados no nosso Banco de Dados.
+
+---
+
+1. https://api.rubyonrails.org/v5.2.3/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to
+2. https://api.rubyonrails.org/v5.2.3/classes/ActionView/Helpers/FormHelper.html#method-i-form_for
+3. https://m.signalvnoise.com/paying-tribute-to-the-web-with-view-source/
+4. https://github.com/simplecov-ruby/simplecov/issues/994
+5. https://edgeguides.rubyonrails.org/testing.html#parallel-testing
+
+### 10.3. Salvando no Banco
+
+Vamos adicionar os testes para a nossa action de ```create``` no nosso teste ```MarketListsControllerTest```
+
+```rb
+  test 'Should create a new market list if market date is filled' do
+    assert_difference 'MarketList.count', 2 do
+      post market_lists_path, params: { market_list: { name: 'My List', market_date: '2021-05-29' } }
+      post market_lists_path, params: { market_list: { name: '', market_date: '2021-05-29' } }
+    end
+  end
+
+  test 'Should show market date is required if it is empty' do
+    assert_difference 'MarketList.count', 0 do
+      post market_lists_path, params: { market_list: { name: 'My List', market_date: '' } }
+      assert_select 'li', 'Market date can\'t be blank'
+    end
+  end
+```
+
+Usamos o ```assert_difference``` para garantir que a quantidade de MarketList seja alterada no banco na quantidade que queremos.
+
+Ao rodar os testes:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+8 runs, 14 assertions, 0 failures, 2 errors, 0 skips
+```
+
+O erro se da por conta da ausência da action ```create```.
+Para fazer os errors pararem de ocorrer, basta criarmos nossa action.
+
+```rb
+  def create; end
+```
+
+Agora temos 2 erros:
+
+```sh
+(...)
+"MarketList.count" didn't change by 2
+(...)
+NoMethodError: undefined method `document' for nil:NilClass
+```
+
+O primeiro erro aponta que a quantidade de elementos não aumentou em 2. O que é esperado, dado que adicionamos um método em branco no nosso controller.
+
+O segundo erro aponta que não conseguimos selecionar um elemento na tela, pois não renderizamos tela nenhuma.
+
+Para corrigir o primeiro erro, precisamos salvar as informações no banco de dados. Para isso, o ```ActiveRecord``` disponibiliza uma coleção de métodos de [persistência](https://api.rubyonrails.org/v6.1.3.2/classes/ActiveRecord/Persistence.html).
+
+No nosso caso em específico, vamos utilizar o método ```save```, que tenta salvar o objeto que temos no banco, retornando ```true``` caso o mesmo salve com sucesso, ou ```false``` caso algo de errado.
+
+Para chamar o método ```save``` precisamos instanciar o nosso objeto com as informações que vem do parâmetro. Para pega-las, o controller já possui uma variável ```params``` que contem as informações.
+
+Para verificar as informações que estão vindo nessa varíavel, vamos forçar um erro na mesma.
+
+```rb
+  def create
+    raise params.inspect
+  end
+```
+
+Ao rodar os testes novamente:
+
+```sh
+RuntimeError: #<ActionController::Parameters {"market_list"=>{"name"=>"My List", "market_date"=>"2021-05-29"},    "controller"=>"market_lists", "action"=>"create"} permitted: false>
+```
+
+Repare que ariável params, possui um um hash (dicionário de chave valor) dentro dela justamente com as informações que precisamos. Mas a mesma está marcada com ```permitted``` false.
+
+O ```permitted``` indica para o Rails que ele não pode atribuir em massa as informações que ele precisa. O motivo disso é evitar que o usuário passe mais campos do que o permitido para o mesmo.
+
+Imagine por exemplo que o usuário force a requisição trazer o atributo ```created_at``` e com isso ele diga que na verdade, a lista foi criada ano passado.
+
+Ou pior, imagine que um usuário tenha um atributo admin e que através de uma requisição ele consiga mudar esse atributo para true simplesmente porque aceitamos qualquer parâmetro nessa requisição.
+
+Na verdde, isso [já ocorreu](http://homakov.blogspot.com/2012/03/how-to.html) com um dos maiores sites que usam Rails, o Github, e justamente por isso o [```StrongParameters```](https://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html) foi criado.
+
+Para transformar o nosso parâmetro em seguro e dizer exatamente quais campos queremos aceitar naquela requisição (no nosso caso 'name' e 'market_date'), podemos seguir a documentação do ```StrongParameters``` e usar os métodos ```require``` e ```permit```.
+
+```rb
+  def create
+    raise params.require(:market_list).permit(:name, :market_date).inspect
+  end
+```
+
+Rodando os testes novamente:
+
+```sh
+#<ActionController::Parameters {"name"=>"My List", "market_date"=>"2021-05-29"} permitted: true>
+```
+
+Perfeito, exatamente os dados que precisamos e com  ```permitted``` igual a true. Podemos alterar o código agora para iniciar o nosso objeto com os dados.
+
+```rb
+  def create
+    @market_list = MarketList.new(params.require(:market_list).permit(:name, :market_date))
+    @market_list.save
+  end
+```
+
+Ao rodar os testes novamente, temos que o primeiro erro foi corrigido (o banco aumentou o número de registros em 2), mas o segundo erro mudou para:
+
+```sh
+  ActiveRecord::NotNullViolation: SQLite3::ConstraintException: NOT NULL constraint failed: market_lists.market_date
+```
+
+Isso ocorreu pois, na nossa migração, colocamos que a coluna market date não poderia ser em branco. Nós tratamos isso no banco de dados (última camada), mas não tratamos na nossa aplicação.
+
+---
+
+1. https://api.rubyonrails.org/v6.1.3.2/classes/ActiveRecord/Persistence.html
+2. http://homakov.blogspot.com/2012/03/how-to.html
+3. https://edgeapi.rubyonrails.org/classes/ActionController/StrongParameters.html
+
+#### 10.3.1. Validações
+
+O Rails possui toda uma camada de [validações de dados](https://guides.rubyonrails.org/active_record_validations.html), ela permite trazer para aplicação, as validações necessárias para garantir a integridade dos nossos dados, além de permitir responder para o usuário com uma mensagem muito mais amigável do que um erro do banco de dados.
+
+Como exemplo, iremos usar a validação de ```presence```, mas aconselho fortemente ler as validações padrões, além de claro como criar suas validações ```customizadas``` diretamente na documentação.
+
+Primeiro vamos escrever o nosso teste no ```MarketListTest```
+
+```rb
+class MarketListTest < ActiveSupport::TestCase
+  test "Should not be valid without market_date" do
+    refute MarketList.new(market_date: nil, name: 'Need buy something').valid?
+  end
+
+  test "Should be valid with market_date and without name" do
+    assert MarketList.new(market_date: Date.current, name: nil).valid?
+  end
+end
+```
+
+Rodando o comando ```rails test test/models/market_list_test.rb``` temos que mesmo no caso que o market_date é nulo, o método ```valid?``` está retornando ```true```. Para mudar isso, precisamos adicionar a nossa validação no modelo.
+
+```rb
+class MarketList < ApplicationRecord
+  validates :market_date, presence: true
+end
+```
+
+Ao rodar o comando novamente, todos os testes devem ter passado.
+
+---
+
+1. https://guides.rubyonrails.org/active_record_validations.html
+
+
+#### 10.3.2. Callbacks
+
+Nesse momento, você pode se perguntar se devemos chamar o método ```.valid?``` antes de tentar salvar no controller, algo como:
+
+```rb
+  def create
+    @market_list = MarketList.new(params.require(:market_list).permit(:name, :market_date))
+    if @market_list.valid?
+      @market_list.save
+    end
+  end
+```
+
+A resposta para essa dúvida é **não**. O rails, ao salvar um objeto no banco, passa par uma sequência de [callbacks](https://guides.rubyonrails.org/active_record_callbacks.html#available-callbacks).
+
+Ao criar um objeto, os callbacks são:
+
+```rb
+  before_validation
+  after_validation
+  before_save
+  around_save
+  before_create
+  around_create
+  after_create
+  after_save
+  after_commit / after_rollback
+```
+
+É possível rodar código em qualquer um desses callbacks, por exemplo, após ```commitar``` no banco, enviar um e-mail. Mas no nosso caso agora, o importante é que antes do ```after_validation``` e depois do ```before_validation```, o próprio rails roda o comando ```.valid?```, interrompendo os próximos callbacks se o mesmo retornar ```false```.
+
+Vale a nota que, caso você queira pular as validações por algum motivo, é possível chamar o método ```.save(validate: false)``` e com isso os callbacks ```before_validation``` e ```after_validation``` não serão chamados.
+
+---
+
+1. https://guides.rubyonrails.org/active_record_callbacks.html#available-callbacks
+
+#### 10.3.3. Voltando ao controller
+
+Agora que temos o nosso modelo sendo validado corretamete, podemos retornar ao nosso controller e rodar os testes novamente.
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+  Error:
+  MarketListsControllerTest#test_Should_show_market_date_is_required_if_it_is_empty:
+  NoMethodError: undefined method `document' for nil:NilClass
+```
+
+Voltamos a ter novamente o erro inicial, com isso sabemos que pelo menos não estamos mais tentando salvar no banco.
+Para resolver esse teste em específico, precisamos renderizar novamente a view da action new.
+
+Lembrando, por padrão o rails renderiza a view com o mesmo nome da action, mas é possível mudar isso com o método ```render```.
+
+```rb
+  def create
+    @market_list = MarketList.new(params.require(:market_list).permit(:name, :market_date))
+    @market_list.save
+    render :new
+  end
+```
+
+Ao rodar os testes, temos que agora que na view nós não temos a mensagem de erro.
+
+Uma boa prática, segundo a nngroup, é renderizar o [erro próximo ao campo](https://www.nngroup.com/articles/errors-forms-design-guidelines/).
+
+Para atender esse requisito, iremos alterar a nossa ```new.html.erb``` para:
+
+```erb
+  <h2>Nova Lista</h2>
+
+  <%= form_for @market_list do |f| %>
+    <label>Nome</label>: <%= f.text_field :name %>
+    <br />
+    <label>Data</label>: <%= f.date_field :market_date %>
+
+    <% if @market_list.errors.full_messages_for(:market_date).any? %>
+      <ul>
+        <% @market_list.errors.full_messages_for(:market_date).each do |error_message| %>
+          <li>
+            <%= error_message %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <br />
+    <%= f.submit %>
+  <% end %>
+```
+
+No código acima, verificar se existe alguma mensagem de erro para o campo ```market_date```, se tiver, interamos sobre a mesma usando o ```each``` e colocamos na view a mensagem dentro de uma tag ```li```.
+
+Rodando os nossos testes temos agora que todos estão passando.
+
+Nesse momento é uma boa hora para rodar nosso servidor e simular manualmente nossa tela.
+
+![error message from blank market date](market_date_blank_error_message.png)
+
+Um dos pontos que voce vai perceber é que o input da data foi para baixo do label, isso se deve pois o rails adicionou uma ```div``` ao seu redor.
+
+Dado que o rails está manipulando o input, começamos a nos perguntar se temos uma maneira mais "automática" de adicionar as mensagens de error, se não, para cada campo vamos ter que adicionar um if parecido com o de cima. E o pior, se a gente no futuro quiser substituir o ul/li por qualquer outra tag, vamos ter que fazer o mesmo em todas as nossas telas.
+
+E a resposta é sim, o rails por padrão, como já dito, altera o nosso input e empacta ele com uma div com classe ```field_with_errors```. Mas como tudo no rails, é possível mudar o padrão para o que queremos para nossa aplicação.
+
+No nosso arquivo ```application.rb``` vamos adicionar o código:
+
+```rb
+(...)
+module SimpleMarketList
+  class Application < Rails::Application
+    (...)
+    ActionView::Base.field_error_proc = proc do |html_tag, instance_tag|
+      html = [html_tag.html_safe]
+
+      object = instance_tag.object
+      errors_messages = object.errors.full_messages_for(instance_tag.instance_variable_get("@method_name"))
+
+      if errors_messages.any?
+        html << '<ul>'.html_safe
+
+        errors_messages.each do |message|
+          html << '<li>'.html_safe
+          html << message
+          html << '</li>'.html_safe
+        end
+
+        html << '</ul>'.html_safe
+      end
+
+      instance_tag.safe_join(html) # avoid html injection on error message.
+    end
+  end
+end
+```
+
+E podemos remover o código da nossa view ```new.html.erb```
+
+```erb
+  <h2>Nova Lista</h2>
+
+  <%= form_for @market_list do |f| %>
+    <label>Nome</label>: <%= f.text_field :name %>
+    <br />
+    <label>Data</label>: <%= f.date_field :market_date %>
+    <br />
+    <%= f.submit %>
+  <% end %>
+```
+
+Ao rodar os nossos testes, percebemos que todos ainda estão funcionando.
+
+Porém ao rodar o servidor e salvar um lista válida, percebemos que nada acontece, e pior, nossos testes também não previam esse comportamento.
+
+#### 10.3.4. Redirecionando a Requisição
+
+---
+
+1. https://www.nngroup.com/articles/errors-forms-design-guidelines/
+2. https://www.rubydoc.info/docs/rails/4.1.7/ActionView/Helpers/OutputSafetyHelper#safe_join-instance_method
+
+## 11. Buscando no Banco
+
+## 12. Editando uma entrada na Lista
+
+### 12.1. Buscando um único registro no banco
+
+#### 12.1.1. Adicionando novos testes no controller
+
+#### 12.1.2. Alterando a view
+
+#### 12.1.3. Usando o find
+
+### 12.2. Partials
+
+#### 12.2.1. Retirando duplicidade das views
