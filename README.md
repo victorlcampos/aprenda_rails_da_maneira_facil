@@ -57,6 +57,7 @@
     - [10.3.2. Callbacks](#1032-callbacks)
     - [10.3.3. Voltando ao controller](#1033-voltando-ao-controller)
     - [10.3.4. Redirecionando a Requisição](#1034-redirecionando-a-requisição)
+    - [10.3.4. Guardando o estado da sua aplicação](#1034-guardando-o-estado-da-sua-aplicação)
 - [11. Buscando no Banco](#11-buscando-no-banco)
 - [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
   - [12.1. Buscando um único registro no banco](#121-buscando-um-único-registro-no-banco)
@@ -1749,9 +1750,33 @@ rails test test/controllers/market_lists_controller_test.rb
   6 runs, 14 assertions, 0 failures, 0 errors, 0 skips
 ```
 
-Repare que o nosso % de cobertura de testes caiu, até o momento da escrita desse livro, o simplecov estava com um [bug](https://github.com/simplecov-ruby/simplecov/issues/994) por conta que o Rails roda testes em [paralelo](https://edgeguides.rubyonrails.org/testing.html#parallel-testing).
+Repare que o nosso % de cobertura de testes caiu por conta que o Rails roda testes em [paralelo](https://edgeguides.rubyonrails.org/testing.html#parallel-testing). Para ajustar esse ponto, precisamos alterar a configuração do Simplecov para ele concatenar o resultado de cada processo que ele abre para executar os testes em paralelo.
 
-Se no momento que você estiver lendo o livro o problema percistir, basta comentar a linha ```parallelize(workers: :number_of_processors)``` do arquivo ```test/test_helper.rb```
+Par aisso, temos somente que alterar o código do ```test_helper.rb``` para:
+
+```rb
+(...)
+
+module ActiveSupport
+  class TestCase
+    # Run tests in parallel with specified workers
+    parallelize(workers: :number_of_processors)
+
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
+    end
+
+    parallelize_teardown do |worker|
+      SimpleCov.result
+    end
+
+    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
+    fixtures :all
+
+    # Add more helper methods to be used by all tests here...
+  end
+end
+```
 
 Agora temos tudo no lugar para salvar os dados no nosso Banco de Dados.
 
@@ -2049,7 +2074,7 @@ module SimpleMarketList
 end
 ```
 
-E podemos remover o código da nossa view ```new.html.erb```
+O método acima lista as mensagens de erro de maneira segura na [view](https://www.rubydoc.info/docs/rails/4.1.7/ActionView/Helpers/OutputSafetyHelper#safe_join-instance_method). E agora podemos remover o código específico da nossa view ```new.html.erb```, ficando com:
 
 ```erb
   <h2>Nova Lista</h2>
@@ -2067,12 +2092,112 @@ Ao rodar os nossos testes, percebemos que todos ainda estão funcionando.
 
 Porém ao rodar o servidor e salvar um lista válida, percebemos que nada acontece, e pior, nossos testes também não previam esse comportamento.
 
-#### 10.3.4. Redirecionando a Requisição
-
 ---
 
 1. https://www.nngroup.com/articles/errors-forms-design-guidelines/
 2. https://www.rubydoc.info/docs/rails/4.1.7/ActionView/Helpers/OutputSafetyHelper#safe_join-instance_method
+
+
+#### 10.3.4. Redirecionando a Requisição
+
+A nossa action ```create```, após salvar, sempre renderiza o a view ```new```, o que queremos é que, se a tentativa de salvar os dados funcione, o usuário seja redirecionado para a tela de index. Além disso, queremos garantir que uma mensagem de sucesso apareça na tela:
+
+```rb
+  test 'Should create a new market list if market date is filled' do
+    assert_difference 'MarketList.count', 2 do
+      post market_lists_path, params: { market_list: { name: 'My List', market_date: '2021-05-29' } }
+      post market_lists_path, params: { market_list: { name: '', market_date: '2021-05-29' } }
+    end
+    follow_redirect!
+    assert_select 'a', text: 'Nova lista de Mercado'
+    assert_select 'p', 'Nova lista criada com Sucesso'
+  end
+```
+
+Rodando os nossos testes, temos:
+
+```sh
+MarketListsControllerTest#test_Should_create_a_new_market_list_if_market_date_is_filled:
+RuntimeError: not a redirect! 200 OK
+```
+
+Agora sim nossos testes mostram que a página não foi redirecionada, e sim, retornou o status 200. Para resolver esse caso de uso, o Rails possui o método [```redirect_to```](https://api.rubyonrails.org/v6.1.3.2/classes/ActionController/Redirecting.html#method-i-redirect_to).
+
+Vamos adicionar o mesmo no nosso fluxo de criação:
+
+```rb
+  def create
+    @market_list = MarketList.new(params.require(:market_list).permit(:name, :market_date))
+
+    if @market_list.save
+      redirect_to action: :index
+    else
+      render :new
+    end
+  end
+```
+
+Ao rodar nossos testes novamente teremos que a mensagem de sucesso não apareceu na tela.
+
+---
+
+1. https://api.rubyonrails.org/v6.1.3.2/classes/ActionController/Redirecting.html#method-i-redirect_to
+
+#### 10.3.4. Guardando o estado da sua aplicação
+
+A action index não possui, nesse momento, nenhuma maneira de saber que uma nova lista de mercado foi sava com sucesso na action anterior. O Rails por padrão não guarda nenhum estado da sua aplicação.
+
+Porém, como nesse caso, é necessário guardar essa informação, mesmo por um período pequeno de tempo. Para essa situação temos algumas formadas de resolver:
+
+1) [cookies](https://guides.rubyonrails.org/action_controller_overview.html#cookies): São uma estrutura de Chave-Valor que são salvas no Browser do Usuário, enquanto o usuário não "limpar" os cookies, eles estarão lá. Existem limitações de espaço que o próprio Browser coloca, mas os cookies são muito úteis para, por exemplo, lembrar qual era o filtro que um usuário estava realizando antes de entrar em uma determinada página. Os cookies também podem ser acesso no cliente, através de Javascript.
+
+2) [sessions](https://guides.rubyonrails.org/action_controller_overview.html#session): A session é uma segunda estrutura de chave-valor que existem para cada usuário e enquanto a sessão do usuário existir. Um exemplo, quando o usuário faz logout, a session deixa de existir. Ela pode ser armazenada dentro dos cookies, ou em outras camadas, como no próprio banco de dados. A informação fica criptografada, não podendo ser acessada pelo cliente.
+
+3) [flash](https://guides.rubyonrails.org/action_controller_overview.html#the-flash): Já flash é um caso específico da session que só existe durante o ciclo de vida da requisição. Assim que a requisição finaliza, o flash também é apagado.
+
+O flash é examente o que queremos para resolver o nosso problema, passar a informação da action ```create```, usar ela na view da action ```index``` e depois descarta-la.
+
+Pra isso, vamos alterar mais uma vez o nosso controller:
+
+```rb
+  def create
+    @market_list = MarketList.new(params.require(:market_list).permit(:name, :market_date))
+
+    if @market_list.save
+      flash[:success] = 'Nova lista criada com Sucesso'
+      redirect_to action: :index
+    else
+      render :new
+    end
+  end
+```
+
+E agora usar ela na nossa view do index
+
+```erb
+<% if flash[:success].present? %>
+  <p><%= flash[:success] %></p>
+<% end %>
+
+<h1>Suas listas de Mercado</h1>
+<%= link_to 'Nova lista de Mercado', new_market_list_path %>
+<p>Você ainda não possui nenhuma lista</p>
+```
+
+Rodando o nosso teste, sucesso.
+
+Porem ao rodar o servidor:
+
+![mensagem de sucess](success_message.png)
+
+A nossa mensagem de sucesso apareceu, mas nenhuma lista de mercado está aparecendo na tela.
+
+---
+
+1. https://guides.rubyonrails.org/action_controller_overview.html#cookies
+2. https://guides.rubyonrails.org/action_controller_overview.html#session
+3. https://guides.rubyonrails.org/action_controller_overview.html#the-flash
+
 
 ## 11. Buscando no Banco
 
