@@ -57,7 +57,7 @@
     - [10.3.2. Callbacks](#1032-callbacks)
     - [10.3.3. Voltando ao controller](#1033-voltando-ao-controller)
     - [10.3.4. Redirecionando a Requisição](#1034-redirecionando-a-requisição)
-    - [10.3.4. Guardando o estado da sua aplicação](#1034-guardando-o-estado-da-sua-aplicação)
+    - [10.3.5. Guardando o estado da sua aplicação](#1035-guardando-o-estado-da-sua-aplicação)
 - [11. Buscando no Banco](#11-buscando-no-banco)
 - [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
   - [12.1. Buscando um único registro no banco](#121-buscando-um-único-registro-no-banco)
@@ -2143,7 +2143,7 @@ Ao rodar nossos testes novamente teremos que a mensagem de sucesso não apareceu
 
 1. https://api.rubyonrails.org/v6.1.3.2/classes/ActionController/Redirecting.html#method-i-redirect_to
 
-#### 10.3.4. Guardando o estado da sua aplicação
+#### 10.3.5. Guardando o estado da sua aplicação
 
 A action index não possui, nesse momento, nenhuma maneira de saber que uma nova lista de mercado foi sava com sucesso na action anterior. O Rails por padrão não guarda nenhum estado da sua aplicação.
 
