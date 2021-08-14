@@ -59,6 +59,11 @@
     - [10.3.4. Redirecionando a Requisição](#1034-redirecionando-a-requisição)
     - [10.3.5. Guardando o estado da sua aplicação](#1035-guardando-o-estado-da-sua-aplicação)
 - [11. Buscando no Banco](#11-buscando-no-banco)
+  - [11.1. Fixtures](#111-fixtures)
+  - [11.2. Fazendo query no banco](#112-fazendo-query-no-banco)
+  - [11.3. Mostrando o resultado para o usuário](#113-mostrando-o-resultado-para-o-usuário)
+  - [11.4. Localizando nossa aplicação](#114-localizando-nossa-aplicação)
+  - [11.5. Traduzindo a aplicação](#115-traduzindo-a-aplicação)
 - [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
   - [12.1. Buscando um único registro no banco](#121-buscando-um-único-registro-no-banco)
     - [12.1.1. Adicionando novos testes no controller](#1211-adicionando-novos-testes-no-controller)
@@ -1074,6 +1079,8 @@ Rails.application.eager_load! # Necessário por conta do spring
 
 A última linha que adicionamos [é necessária](https://github.com/simplecov-ruby/simplecov#want-to-use-spring-with-simplecov) pois o Rails 6 utiliza o spring como forma de diminuir o tempo de Boot.
 
+Mas como o Rails está sempre buscando se simplificar, ao perceber que em PCs mais novos o spring não traz tanto ganho, o mesmo [não virá como padrão no Rails 7](https://github.com/rails/rails/pull/42997).
+
 Agora rode no terminar o comando
 
 ```sh
@@ -1116,6 +1123,7 @@ Assim, sempre que a gente esquecer de tester alguma linha, ele retornar um erro 
 * https://www.ruby-toolbox.com/categories/code_coverage
 * https://github.com/simplecov-ruby/simplecov
 * https://github.com/simplecov-ruby/simplecov#want-to-use-spring-with-simplecov
+* https://github.com/rails/rails/pull/42997
 
 ### 9.3. Análise Estática do Código
 
@@ -2206,6 +2214,323 @@ A nossa mensagem de sucesso apareceu, mas nenhuma lista de mercado está aparece
 
 
 ## 11. Buscando no Banco
+
+Voltando a tela de index, vemos que a nossa lista de mercado ainda não está aparecendo na nossa tabela,
+
+Para isso, temos que buscar essas informações no banco para mostrar as mesmas na tela.
+
+### 11.1. Fixtures
+
+Seguindo a nossa estratégia de testar primeiro, precisamos que nosso banco esteja preenchido.
+
+Já tivemos que lidar anteriormente com Fixtures nesse livro, agora vamos nos aprofundar um pouco dentro delas.
+
+Como já disse, a ideia da Fixtures é que você consiga montar os cenários de testes que o seu banco precisa ter para reproduzir as situações dos usuários.
+
+As fixtures são uma técnica que diverge um pouco do que o TDD prega de "não encostar no banco de dados".
+
+A verdade é que a uns 20 anos, o banco de dados era lento o que fazia essa ideia fazer sentido. Hoje rodar um postgres/mysql na máquina, com SSD, faz seus testes demorarem poucos minutos para rodar em uma aplicação grande. Por exemplo, [no Basecamp o a suit inteira de testes roda em 5 minutos](https://dhh.dk/2014/slow-database-test-fallacy.html).
+
+Além de ser rápido o suficiente, usar fixtures evita que você adicione camadas desnecessárias na sua aplicação, somente para evitar esse pequeno gargalo.
+
+E mesmo assim, todas essas camadas iriam esconder o problemas que só o banco vai ter como por exemplo, index, etc. Já apresentado nesse livro.
+
+Vamos editar nossa fixture de market_list para adicionar nome que é um dado que ainda não possuímos.
+
+```test/fixtures/market_lists.yml```
+```yml
+one:
+  name: 'Market List One'
+  market_date: '2021-01-01'
+#
+two:
+  name: 'Market List Two'
+  market_date: '2020-01-01'
+```
+
+Pronto, agora podemos escrever nossos testes considerando que existem essas duas listas de mercado no banco de dados.
+
+Para garantir que o usuário agora veja as listas de mercado correta na tela, vamos testar se o nome das 2 listas aparecem na view e a data está formatada.
+
+Editando o nosso teste de controller ```test/controllers/market_lists_controller_test.rb``` agora:
+
+```rb
+  test 'Should list market list name and date on index' do
+    get market_lists_path
+    assert_response :success
+
+    assert_select 'tr' do
+      assert_select 'td', text: 'Market List One'
+      assert_select 'td', text: '01/01/2021'
+    end
+
+    assert_select 'tr' do
+      assert_select 'td', text: 'Market List Two'
+      assert_select 'td', text: '01/01/2020'
+    end
+  end
+```
+
+Rodando nossos testes agora:
+
+```sh
+rails test
+  Expected at least 1 element matching "tr", found 0..
+```
+
+Ótimo, agora temos um teste que garante que nossas listas vão estar na tela, próximo passo, é fazer os testes passarem.
+
+-------------
+
+1. https://dhh.dk/2014/slow-database-test-fallacy.html
+
+### 11.2. Fazendo query no banco
+
+O active record tem toda uma api de [consulta do banco](https://guides.rubyonrails.org/active_record_querying.html).
+
+Que permite desde query simples, como usar where. Até fazer joins comeplexos, usando as relações definidas no próprio Rails.
+
+Nesse primeiro momento, vamos somente retornar todas as listas cadastradas no banco.
+
+```app/controllers/market_lists_controller.rb```
+```rb
+(...)
+def index
+  @market_lists = MarketList.all # I really love rails code
+end
+(...)
+```
+
+Assim como já fizemos nas outras actions, definimos uma variável de instância para podermos utilizar a mesma na view.
+
+-------------
+
+1. https://guides.rubyonrails.org/active_record_querying.html
+
+### 11.3. Mostrando o resultado para o usuário
+
+E agora vamos somente mostrar a mensagem de ```Você ainda não possui nenhuma lista``` se não tiver nenhum elemento na lista.
+
+```app/views/market_lists/index.html.erb```
+```erb
+(...)
+<% if @market_lists.any? %>
+<% else %>
+  <p>Você ainda não possui nenhuma lista</p>
+<% end %>
+(...)
+```
+
+Ao rodar os testes, veremos que verificaram se a mensagem existe quebraram. Isso porque nós temos listas de mercado no nosso banco.
+Para fazer os testes funcionarem, podemos garantir que para esse teste, o método all não retorne nenhum elemento.
+
+```test/controllers/market_lists_controller_test.rb```
+```rb
+  (...)
+  test "Should show you don't have any list if don't have any list if access root" do
+    MarketList.stub :all, MarketList.none do
+      get root_path
+      assert_response :success
+      assert_select 'p', text: 'Você ainda não possui nenhuma lista'
+    end
+  end
+
+  test "Should show you don't have any list if don't have any list if access specific url" do
+    MarketList.stub :all, MarketList.none do
+      get market_lists_path
+      assert_response :success
+      assert_select 'p', text: 'Você ainda não possui nenhuma lista'
+    end
+  end
+  (...)
+```
+
+Nesse caso, usamos uma técnica de teste que se chama stub. Ela serve para garantir o retorno de um determinado método que seu teste vai chamar internamente. Assim, conseguimos ter maior controle do contexto do nosso teste. Nesse caso, sempre que a gente chaamr MarketList.stub, vamos ter o retorno de MarketList.none, que é exatamente o que queremos para esses testes.
+
+Aconselho a ler o [excelente artigo](https://martinfowler.com/articles/mocksArentStubs.html) do Martin Fowler sobre as diferentes técnicas para escrever testes.
+
+Por fim, para usar o stub, precisamos no ```test_helper.rb``` carregar essa parte do minitest que não vem por padrão no ```rails/test_help``` que já é carregado no arquivo.
+
+```rb
+(...)
+Rails.application.eager_load!
+
+ENV['RAILS_ENV'] ||= 'test'
+
+require_relative '../config/environment'
+require 'rails/test_help'
+require 'minitest/autorun'
+(...)
+```
+
+Ao rodar novamente os testes:
+
+```sh
+rails test
+  (...)
+  Expected at least 1 element matching "tr", found 0..
+  11 runs, 23 assertions, 1 failures, 0 errors, 0 skips
+```
+
+Voltamos a ter somente o teste de listar os elementos que temos no banco falhando.
+
+Agora, vamos implementar nossa tabela de lista de mercado.
+
+```app/views/market_lists/index.html.erb```
+```erb
+(...)
+<% if @market_lists.any? %>
+  <table>
+    <thead>
+      <th>ID</th><th>Nome</th><th>Data</th>
+    </thead>
+    <tbody>
+      <% @market_lists.each do |ml| %>
+        <tr>
+          <td><%= ml.id %></td><td><%= ml.name %></td><td><%= ml.market_date %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>Você ainda não possui nenhuma lista</p>
+<% end %>
+(...)
+```
+
+Ao rodar novamente os testes
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+<01/01/2021> expected but was
+<298486374>..
+```
+
+---
+
+1. https://martinfowler.com/articles/mocksArentStubs.html
+
+### 11.4. Localizando nossa aplicação
+
+Vemos que ainda temos um erro ocorrendo, isso porque ele não conseguiu encontrar a data, mesmo tendo colocando ela na tabela.
+Para entender o que está ocorrendo, podemos rodar o servidor (```rails s```) e verificar como a data está aparecendo.
+
+![tabela com os dados preenchidos](market_list_table_with_data.png)
+
+Podemos ver que, apesar da tabela conter a data, ela não está no formato que queremos.
+
+Para formatar a data, o rails traz uma poderosa ferramente de [internacionalização](https://guides.rubyonrails.org/i18n.html), que permite tanto traduzir palavras de acordo com o usuário (tradução), quanto mostrar os dados no formato que o usuário está acostumado (localização).
+
+```app/views/market_lists/index.html.erb```
+```erb
+(...)
+  <% @market_lists.each do |ml| %>
+    <tr>
+      <td><%= ml.id %></td><td><%= ml.name %></td><td><%= l ml.market_date %></td>
+    </tr>
+  <% end %>
+(...)
+```
+
+A única alteração que fizemos foi adicionar o ```l``` e vamos colocar a linguagem pt-BR como a padrão da nossa aplicação no arquivo ```application.rb```
+
+```rb
+module SimpleMarketList
+  class Application < Rails::Application
+    (...)
+    I18n.available_locales = [:'pt-BR']
+    I18n.default_locale = :'pt-BR'
+  end
+end
+```
+
+Agora podemos criar dentro da pasta ```config/locales``` o arquivo ```pt-BR.yml```
+
+```yml
+pt-BR:
+  date:
+    formats:
+      default: "%d/%m/%Y"
+```
+
+Ao reiniciar o servidor, temos:
+
+![Tabela de lista de compras com data correta](market_list_table_with_right_date.png)
+
+Agora rodando os testes temos:
+
+```sh
+rails test
+Failure:
+MarketListsControllerTest#test_Should_show_market_date_is_required_if_it_is_empty [/home/victorcampos/Workspace/v360/simple_market_list/test/controllers/market_lists_controller_test.rb:59]:
+<Market date can't be blank> expected but was
+<Market date translation missing: pt-BR.activerecord.errors.models.market_list.attributes.market_date.blank>..
+Expected 0 to be >= 1.
+
+
+rails test test/controllers/market_lists_controller_test.rb:58
+```
+
+---
+
+1. https://guides.rubyonrails.org/i18n.html
+
+### 11.5. Traduzindo a aplicação
+
+Podemos ver que o teste que esperava uma mensagem em inglês, agora está achando um erro de tradução.
+Isso porque todas as mensagem do framework, vem por padrão na linguagem do usuário, no nosso caso, 'pt-BR'. Só que no nosso arquivo não existe nenhuma mensagem de tradução para a chave ```pt-BR.activerecord.errors.models.market_list.attributes.market_date.blank```.
+
+Vamos adicionar:
+
+```pt-BR.yml```
+```yml
+pt-BR:
+  activerecord:
+    errors:
+      models:
+        market_list:
+          attributes:
+            market_date:
+              blank: não pode ficar em branco
+```
+
+Repare que segue a mesma ordem da chave de tradução. Agora vamos mudar o texto dos testes para português:
+```test/controllers/market_lists_controller_test.rb```
+```rb
+  test 'Should show market date is required if it is empty' do
+    assert_difference 'MarketList.count', 0 do
+      post market_lists_path, params: { market_list: { name: 'My List', market_date: '' } }
+      assert_select 'li', 'Market date não pode ficar em branco'
+    end
+  end
+```
+
+Ao rodar os testes:
+```sh
+rails test
+11 runs, 28 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Pronto. Todos os testes passando novamente.
+Mas você deve estar se perguntando, será que tenho que traduzir na mão todas as mensagens padrões do rails para todas as linguas que vou trabalhar?
+
+A resposta é não, alguém já teve esse trabalho e compartilhou na ótima gema ```rails-i18n```. Indicada na própria documentação do Rails ela já trás por padrão uma série de traduções prontas em dezenas de línguas diferentes.
+
+```Gemfile```
+```rb
+  (...)
+  gem 'rails-i18n'
+```
+
+Rodamos o ```bundle``` e podemos apagar o conteúdo do nosso ```pt-BR.yml``` deixando somente a chave ```pt-BR:```
+
+Ao rodar os testes:
+```sh
+rails test
+11 runs, 28 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Vemos que todos os testes continuam passando.
 
 ## 12. Editando uma entrada na Lista
 
