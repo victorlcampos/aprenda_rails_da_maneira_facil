@@ -35,7 +35,7 @@
     - [8.2.1. A importância dos Testes](#821-a-importância-dos-testes)
   - [8.3. Roteando a requisição](#83-roteando-a-requisição)
     - [8.3.1. O que é uma API RESTFUL?](#831-o-que-é-uma-api-restful)
-    - [8.3.2. Usando rake routes](#832-usando-rake-routes)
+    - [8.3.2. Usando rails routes](#832-usando-rails-routes)
   - [8.4. Escrevendo a primeira Action](#84-escrevendo-a-primeira-action)
   - [8.5. Escrevendo a primeira View](#85-escrevendo-a-primeira-view)
 - [9. Verificando a cobertura de Testes, Sintaxe e Segurança](#9-verificando-a-cobertura-de-testes-sintaxe-e-segurança)
@@ -65,10 +65,9 @@
   - [11.4. Localizando nossa aplicação](#114-localizando-nossa-aplicação)
   - [11.5. Traduzindo a aplicação](#115-traduzindo-a-aplicação)
 - [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
-  - [12.1. Buscando um único registro no banco](#121-buscando-um-único-registro-no-banco)
-    - [12.1.1. Adicionando novos testes no controller](#1211-adicionando-novos-testes-no-controller)
+  - [Definindo nossa action edit](#definindo-nossa-action-edit)
     - [12.1.2. Alterando a view](#1212-alterando-a-view)
-    - [12.1.3. Usando o find](#1213-usando-o-find)
+    - [Usando o Find](#usando-o-find)
   - [12.2. Partials](#122-partials)
     - [12.2.1. Retirando duplicidade das views](#1221-retirando-duplicidade-das-views)
 
@@ -787,7 +786,7 @@ Como esperado, o Rails já vem preparado para ajudar vocês fazer a sua aplicaç
 2. https://martinfowler.com/articles/richardsonMaturityModel.html
 
 
-#### 8.3.2. Usando rake routes
+#### 8.3.2. Usando rails routes
 
 Para verificar quais rotas foram geradas pelo Rails na etapa anterior, o mesmo fornece um atalho no terminal
 
@@ -2534,13 +2533,176 @@ Vemos que todos os testes continuam passando.
 
 ## 12. Editando uma entrada na Lista
 
-### 12.1. Buscando um único registro no banco
+Obviamente o usuário pode errar as informações que ele inseriu na lista e querer editar e essa é nossa próxima etapa da jornada.
 
-#### 12.1.1. Adicionando novos testes no controller
+Primeiramente, como já vimos ao longo desse livro, vamos adicionar os testes para garantir que o botão editar exista na nossa lista de tarefas.
+
+```rb
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class MarketListsControllerTest < ActionDispatch::IntegrationTest
+  (...)
+  test 'Should show edit link on market list index' do
+    get market_lists_path
+    assert_response :success
+
+    MarketList.all.each do |ml|
+      assert_select "a[href='/market_lists/#{ml.id}/edit']"
+    end
+  end
+  (...)
+end
+```
+
+Como viamos anteriormente, queremos garantir que cada lista de mercado no nosso banc, o link que leva para editar a mesma existe.
+O formato do link é possível verificar rodando ```rails routes``` como vimos no capítulo 8.
+
+Rodando nossos testes:
+
+```sh
+rails test
+Failure:
+MarketListsControllerTest#test_Should_show_edit_link_on_market_list_index [/home/victorcampos/Workspace/v360/simple_market_list/test/controllers/market_lists_controller_test.rb:85]:
+Expected at least 1 element matching "a[href='/market_lists/298486374/edit']", found 0..
+Expected 0 to be >= 1.
+
+
+rails test test/controllers/market_lists_controller_test.rb:80
+```
+
+Agora vamos adicionar na nossa view ```/market_lists/index.html.erb``` assim como fizemos com o link de new.
+
+```erb
+(...)
+  <table>
+    <thead>
+      <th>ID</th><th>Nome</th><th>Data</th><th></th>
+    </thead>
+    <tbody>
+      <% @market_lists.each do |ml| %>
+        <tr>
+          <td><%= ml.id %></td><td><%= ml.name %></td><td><%= l ml.market_date %></td><td><%= link_to 'Editar', edit_market_list_path(ml) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+(...)
+```
+
+Rodando nosso teste novamente
+
+```sh
+rails test
+12 runs, 31 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Pronto, agora podemos rodar o nosso servidor e ver como ficou:
+
+```sh
+rails s
+```
+
+![tela de listagem com o botão editar](list_with_edit_buton.png)
+
+Agora, basta clicar no botão edit:
+
+![erro por falta da ação editar](missing_edit_action.png)
+
+E agora temos a aplicação reclamando que a action do edit não existe.
+
+### Definindo nossa action edit
+
+Diferente da nossa action ```new```, onde a gente inicializou uma lista do zero, nós queremos carregar os dados que já existe no banco para que nosso formulário já tenha os dados que nós já previamente salvamos.
+
+Assim o usuário não terá que se lembrar da informação que ele colocou previamente.
+Então, nosso teste vai ser muito parecido com o nosso de ```new```, porém garantindo que o conteúdo preenchido no banco vai estar preenchido nos campos.
+
+Para escrever esse teste, vamos ter que usar uma outra [funcionalidade das fixtures](https://guides.rubyonrails.org/testing.html#fixtures-are-active-record-objects), ela permite que a gente carregue um elemento do nosso banco, passando a chave que definimos no arquivo .yml.
+
+O rails por padrão vai criar os métodos com o nome dos arquivos das fixtures sem o .yml (no nosso caso market_lists), que recebe por parâmetro a chave que foi definida no yml.
+
+Nossa fixture está assim nesse momento:
+
+```test/fixtures/market_lists.yml```
+```yml
+one:
+  name: 'Market List One'
+  market_date: '2021-01-01'
+#
+two:
+  name: 'Market List Two'
+  market_date: '2020-01-01'
+```
+
+Dessa forma nosso teste fica
+
+```rb
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class MarketListsControllerTest < ActionDispatch::IntegrationTest
+  (...)
+  test 'User should see previous name and date on edit form' do
+    market_list = market_lists(:one)
+    get edit_market_list_path(market_list)
+    assert_response :success
+    assert_select 'input[name=\'market_list[name]\'][value=?]', market_list.name
+    assert_select 'input[name=\'market_list[market_date]\'][value=?]', market_list.market_date
+    assert_select "form[action=\'/market_lists/#{market_list.id}\']"
+  end
+  (...)
+end
+```
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+Error:
+MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
+DRb::DRbRemoteError: The action 'edit' could not be found for MarketListsController
+Did you mean?  create
+               new
+               index (AbstractController::ActionNotFound)
+    test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
+```
+
+E nosso teste agora está apontando o mesmo erro que recebemos ao clicar no link de Editar
+
+Para corrigir o erro anterior, vamos no nosso ```MarketListsController``` criar a nossa action.
+
+```rb
+# frozen_string_literal: true
+
+class MarketListsController < ApplicationController
+  (...)
+  def edit
+  end
+end
+```
+
+Rodando novamente os testes:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+E
+
+Error:
+MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
+ActionController::MissingExactTemplate: MarketListsController#edit is missing a template for request formats: text/html
+    test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
+```
+
+Agora, temos o erro que o arquivo da view não existe. Vamos resolver o mesmo no próximo capítulo.
+
+----
+
+1. https://guides.rubyonrails.org/testing.html#fixtures-are-active-record-objects
 
 #### 12.1.2. Alterando a view
 
-#### 12.1.3. Usando o find
+#### Usando o Find
 
 ### 12.2. Partials
 
