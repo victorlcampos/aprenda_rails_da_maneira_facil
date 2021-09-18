@@ -65,9 +65,9 @@
   - [11.4. Localizando nossa aplicação](#114-localizando-nossa-aplicação)
   - [11.5. Traduzindo a aplicação](#115-traduzindo-a-aplicação)
 - [12. Editando uma entrada na Lista](#12-editando-uma-entrada-na-lista)
-  - [Definindo nossa action edit](#definindo-nossa-action-edit)
-    - [12.1.2. Alterando a view](#1212-alterando-a-view)
-    - [Usando o Find](#usando-o-find)
+  - [12.1. Definindo nossa action edit](#121-definindo-nossa-action-edit)
+    - [12.1.1. Alterando a view](#1211-alterando-a-view)
+    - [12.1.2. Usando o Find](#1212-usando-o-find)
   - [12.2. Partials](#122-partials)
     - [12.2.1. Retirando duplicidade das views](#1221-retirando-duplicidade-das-views)
 
@@ -2612,7 +2612,7 @@ Agora, basta clicar no botão edit:
 
 E agora temos a aplicação reclamando que a action do edit não existe.
 
-### Definindo nossa action edit
+### 12.1. Definindo nossa action edit
 
 Diferente da nossa action ```new```, onde a gente inicializou uma lista do zero, nós queremos carregar os dados que já existe no banco para que nosso formulário já tenha os dados que nós já previamente salvamos.
 
@@ -2700,9 +2700,9 @@ Agora, temos o erro que o arquivo da view não existe. Vamos resolver o mesmo no
 
 1. https://guides.rubyonrails.org/testing.html#fixtures-are-active-record-objects
 
-#### 12.1.2. Alterando a view
+#### 12.1.1. Alterando a view
 
-#### Usando o Find
+#### 12.1.2. Usando o Find
 
 ### 12.2. Partials
 
