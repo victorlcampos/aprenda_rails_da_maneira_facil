@@ -2875,6 +2875,13 @@ A mesma também carregou os dados do banco como valores padrões dos campos na t
 
 ![Ação de Update](update_action_error.png)
 
+-----
+
+1. https://blog.ploeh.dk/2014/08/07/why-dry/
+2. https://guides.rubyonrails.org/layouts_and_rendering.html#using-partials
+3. https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction
+4. https://stackoverflow.com/a/6823266
+
 ### 12.2. Atualizando um Registro
 
 Assim como fizemos com a action de ```create```, precisamos fazer com a action de ```update```:
@@ -2974,10 +2981,3 @@ Apesar de que com o conteudo desse livro já ser possível criar sistemas comple
 * Atualizando a tela dinamicamente
 * Sincronizando tela entre usuários
 * Gerando uma aplicação mobile
-
------
-
-1. https://blog.ploeh.dk/2014/08/07/why-dry/
-2. https://guides.rubyonrails.org/layouts_and_rendering.html#using-partials
-3. https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction
-4. https://stackoverflow.com/a/6823266
