@@ -68,8 +68,17 @@
   - [12.1. Definindo nossa action edit](#121-definindo-nossa-action-edit)
     - [12.1.1. Alterando a view](#1211-alterando-a-view)
     - [12.1.2. Usando o Find](#1212-usando-o-find)
-  - [12.2. Partials](#122-partials)
-    - [12.2.1. Retirando duplicidade das views](#1221-retirando-duplicidade-das-views)
+    - [12.1.3. Partials](#1213-partials)
+  - [12.2. Atualizando um Registro](#122-atualizando-um-registro)
+- [13. Adicionando Itens a Lista](#13-adicionando-itens-a-lista)
+  - [13.1. Tela de visualização de Lista de Mercado](#131-tela-de-visualização-de-lista-de-mercado)
+  - [13.2. Relacionando Modelos](#132-relacionando-modelos)
+  - [13.3. Interagindo com os Itens](#133-interagindo-com-os-itens)
+- [14. Deletando uma lista Inteira](#14-deletando-uma-lista-inteira)
+- [15. Adicionando Estilo na Aplicação](#15-adicionando-estilo-na-aplicação)
+- [16. Fazendo Deploy](#16-fazendo-deploy)
+- [17. Conclusão](#17-conclusão)
+- [18. Próximo Livro (Tópicos Avançados)](#18-próximo-livro-tópicos-avançados)
 
 ## 1. Agradecimento
 
@@ -137,7 +146,7 @@ Eu não sei se acredito na teoria das 10 mil horas, porém tenho plena convicç�
 
 Por isso a ideia desse livro é que ele seja lido em frente a um computador, escrevendo, modificando e testando os códigos aqui propostos.
 
-Iremos juntos concluir um projeto desde o seu início até o fim, passando por todo o desenvolvimento web, como fazer deploy até a geração de um aplicativo mobile.
+Iremos juntos concluir um projeto desde o seu início até o fim, passando por todo o desenvolvimento web até como realizar o deploy da sua aplicação para disponibilizar para toda a internet. Sem complicações, mostrando que o desenvolvimento web não deve ser confuso e complicado.
 
 ### 4.2. Links de Referências
 
@@ -2650,7 +2659,7 @@ class MarketListsControllerTest < ActionDispatch::IntegrationTest
     get edit_market_list_path(market_list)
     assert_response :success
     assert_select 'input[name=\'market_list[name]\'][value=?]', market_list.name
-    assert_select 'input[name=\'market_list[market_date]\'][value=?]', market_list.market_date
+    assert_select 'input[name=\'market_list[market_date]\'][value=?]', market_list.market_date.to_s
     assert_select "form[action=\'/market_lists/#{market_list.id}\']"
   end
   (...)
@@ -2659,13 +2668,13 @@ end
 
 ```sh
 rails test test/controllers/market_lists_controller_test.rb
-Error:
-MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
-DRb::DRbRemoteError: The action 'edit' could not be found for MarketListsController
-Did you mean?  create
-               new
-               index (AbstractController::ActionNotFound)
-    test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
+  Error:
+  MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
+  DRb::DRbRemoteError: The action 'edit' could not be found for MarketListsController
+  Did you mean?  create
+                new
+                index (AbstractController::ActionNotFound)
+      test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
 ```
 
 E nosso teste agora está apontando o mesmo erro que recebemos ao clicar no link de Editar
@@ -2688,10 +2697,10 @@ Rodando novamente os testes:
 rails test test/controllers/market_lists_controller_test.rb
 E
 
-Error:
-MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
-ActionController::MissingExactTemplate: MarketListsController#edit is missing a template for request formats: text/html
-    test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
+  Error:
+  MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
+  ActionController::MissingExactTemplate: MarketListsController#edit is missing a template for request formats: text/html
+      test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
 ```
 
 Agora, temos o erro que o arquivo da view não existe. Vamos resolver o mesmo no próximo capítulo.
@@ -2702,8 +2711,273 @@ Agora, temos o erro que o arquivo da view não existe. Vamos resolver o mesmo no
 
 #### 12.1.1. Alterando a view
 
+Como já criamos anteriormente a tela de criação (```new.html.erb```), vamos reaproveitar a mesma estrutura para nossa tela de edição.
+
+Vamos copiar a mesma para o arquivo ```edit.html.erb``` (mesmo nome da action do controller), e somente editar a tag de subtítulo (h2), ficando:
+
+```erb
+<h2>Editar Lista</h2>
+
+<%= form_for @market_list do |f| %>
+  <label>Nome</label>: <%= f.text_field :name %>
+  <br />
+  <label>Data</label>: <%= f.date_field :market_date %>
+  <br />
+  <%= f.submit %>
+<% end %>
+```
+
+Rodando o nosso teste novamente:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+
+  Error:
+  MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form:
+  ActionView::Template::Error: First argument in form cannot contain nil or be empty
+      app/views/market_lists/edit.html.erb:3
+      test/controllers/market_lists_controller_test.rb:91:in `block in <class:MarketListsControllerTest>'
+
+
+  rails test test/controllers/market_lists_controller_test.rb:89
+```
+
+O erro do teste mudou, informando que o arguemnto que passamos para o form, está nulo. Realmente, se compararmos o conteúdo da action ```new``` com a ```edit```, veremos que falta iniciar a variável ```@market_list```.
+
+Vamos fazer o mesmo que fizemos com a view, para a action:
+
+```rb
+  def edit
+    @market_list = MarketList.new
+  end
+```
+
+Ao rodar os testes:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+
+  Failure:
+  MarketListsControllerTest#test_User_should_see_previous_name_and_date_on_edit_form [/home/victorcampos/Workspace/v360/simple_market_list/test/controllers/market_lists_controller_test.rb:93]:
+  Expected at least 1 element matching "input[name='market_list[name]'][value="Market List One"]", found 0..
+  Expected 0 to be >= 1.
+
+
+  rails test test/controllers/market_lists_controller_test.rb:89
+```
+
+Mesmo assim o nosso teste não passa, pois esperamos que o campo já esteja preenchido com o valor.
+
 #### 12.1.2. Usando o Find
 
-### 12.2. Partials
+Olhando mais atentamente ao nosso teste:
 
-#### 12.2.1. Retirando duplicidade das views
+```rb
+  test 'User should see previous name and date on edit form' do
+    market_list = market_lists(:one)
+    get edit_market_list_path(market_list)
+    assert_response :success
+    (...)
+  end
+```
+
+Podemos perceber que nós passamos como parâmetro a lista de mercado, mas na nossa action não usa essa informação em nenhum lugar.
+
+Olhando a rota gerada para o edit_market_list, que é usada no nosso teste:
+
+```sh
+rails routes | grep edit_market_list
+  edit_market_list GET    /market_lists/:id/edit(.:format) market_lists#edit
+```
+
+Podemos que ver ela é motanda com o parâmetro :id no mesmo, o rails "automaticamente" pega essa informação do objeto passado por parâmetro e adiciona na url.
+
+E conseguimos pegar essa informação através da variável ```params``` que o próprio rails nos fornece.
+
+Como buscar um objeto através da sua chave primária é uma operação **muito** comum, o rails fornece um método para isso, o [```find```](https://api.rubyonrails.org/classes/ActiveRecord/FinderMethods.html#method-i-find).
+
+O método find recebe o valor da chave primária de uma classe e faz a busca por esse objeto. Quando o mesmo não é encotrado, o rails lança uma exception.
+
+Vamos então, ao invés de iniciar um novo objeto como fizemos no new, buscar o objeto que já existe no banco utilizando o params que a url nos fornece.
+
+```rb
+  def edit
+    @market_list = MarketList.find(params[:id])
+  end
+```
+
+Rodando os testes temos:
+
+```sh
+rails test
+.............
+
+simple_market_list/coverage. 28 / 28 LOC (100.0%) covered.
+```
+
+Todos os nossos testes passando novamente.
+
+-----
+
+1. https://api.rubyonrails.org/classes/ActiveRecord/FinderMethods.html#method-i-find
+
+#### 12.1.3. Partials
+
+Mas lógico que copiar e colar um arquivo inteiro não é a maneira mais [DRY (Don't repeat yourself)](https://blog.ploeh.dk/2014/08/07/why-dry/) de se programar.
+
+Como o formulário da tela de ```new``` é igual ao do ```edit```, podemos reaproveitar o código das mesmas usando as [```partials```](https://guides.rubyonrails.org/layouts_and_rendering.html#using-partials) do rails.
+
+Vamos criar o arquivo ```_form.html.erb```(sim '_' faz parte do nome) e recortar o conteúdo do form para o mesmo:
+
+```app/views/market_lists/_form.html.erb```
+```erb
+<%= form_for @market_list do |f| %>
+  <label>Nome</label>: <%= f.text_field :name %>
+  <br />
+  <label>Data</label>: <%= f.date_field :market_date %>
+  <br />
+  <%= f.submit %>
+<% end %>
+```
+
+E vamos renderizar esse conteúdo, tanto na nossa tela de new, quanto nossa tela de edit
+
+```new.html.erb```
+```erb
+<h2>Nova Lista</h2>
+<%= render 'form' %>
+```
+
+```edit.html.erb```
+```erb
+<h2>Editar Lista</h2>
+<%= render 'form' %>
+```
+
+!!!Mas lembre, [*duplication is far cheaper than the wrong abstraction*](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction), se por algum motivo no futuro o formulário começar a mudar e não seja igual para os 2 casos, volte atrás nessa mudança e evite uma abstração ruim!!!
+
+
+Rodando novamente os testes
+```sh
+rails test
+.............
+
+simple_market_list/coverage. 28 / 28 LOC (100.0%) covered.
+```
+
+Agora vamos testar a nossa aplicação no Browser:
+
+![Tela de edição](edit_view.png)
+
+Você pode ver que o próprio Rails mudou o que estava escrito no botão para 'Atualizar' e caso você queria alterar esse comportamento, pode ser a dica dessa [resposta do stackoverflow](https://stackoverflow.com/a/6823266);
+
+A mesma também carregou os dados do banco como valores padrões dos campos na tela, o que era esperado dado os testes estão passando =), mas ao clicar no botão de atualizar o mesmo da um erro.
+
+![Ação de Update](update_action_error.png)
+
+### 12.2. Atualizando um Registro
+
+Assim como fizemos com a action de ```create```, precisamos fazer com a action de ```update```:
+
+Vamos definir primeiramente nossos testes:
+
+```rb
+  test 'Should update a exist market list if market date is filled' do
+    market_list = market_lists(:one)
+
+    assert_difference 'MarketList.count', 0 do
+      put market_list_path(market_list), params: { market_list: { name: 'My List', market_date: '2021-05-29' } }
+      market_list.reload # recarrega o objeto do banco de dados
+      assert_equal 'My List', market_list.name
+      assert_equal Date.parse('2021-05-29'), market_list.market_date
+
+      put market_list_path(market_list), params: { market_list: { name: '', market_date: '2021-05-29' } }
+      market_list.reload # recarrega o objeto do banco de dados
+      assert_equal '', market_list.name
+      assert_equal Date.parse('2021-05-29'), market_list.market_date
+    end
+
+    follow_redirect!
+
+    assert_select 'a', text: 'Nova lista de Mercado'
+    assert_select 'p', 'Lista editada com Sucesso'
+  end
+
+  test 'Should show market date is required on edit if it is empty' do
+    market_list = market_lists(:one)
+
+    assert_difference 'MarketList.count', 0 do
+      initial_market_date = market_list.market_date
+      put market_list_path(market_list), params: { market_list: { name: 'My List', market_date: '' } }
+
+      market_list.reload # recarrega o objeto do banco de dados
+      assert_equal initial_market_date, market_list.market_date
+
+      assert_select 'li', 'Market date não pode ficar em branco'
+    end
+  end
+```
+
+Ao rodar os 2 testes, temos o mesmo erro que tivemos ao clicar no botão no Browser, que a action ```update``` não existe, então vamos adiciona-la:
+
+```rb
+  def update
+    @market_list = MarketList.find(params[:id])
+    @market_list.attributes = params.require(:market_list).permit(:name, :market_date)
+
+    if @market_list.save
+      flash[:success] = 'Lista editada com Sucesso'
+      redirect_to action: :index
+    else
+      render :edit
+    end
+  end
+```
+
+Acelerando um pouco, usamos o que já aprendemos nos captulos anteriores. O ```find``` para pegar o objeto no banco, o ```params.require.permit``` para dizer para o rails quais parâmetros da url são permitidos, o método ```save``` para tentar salvar o objeto no banco, o ```flash``` para passar informação de uma requisição para a outra e o ```redirect```/```render```.
+
+Esse é um bom momento para reler os capitulos anteriores caso alguma parte desse código gerou dúvidas.
+
+Rodando o teste novamente:
+
+```sh
+rails test
+  ...............
+
+  simple_market_list/coverage. 35 / 35 LOC (100.0%) covered.
+```
+
+## 13. Adicionando Itens a Lista
+
+### 13.1. Tela de visualização de Lista de Mercado
+
+### 13.2. Relacionando Modelos
+
+### 13.3. Interagindo com os Itens
+
+## 14. Deletando uma lista Inteira
+
+## 15. Adicionando Estilo na Aplicação
+
+## 16. Fazendo Deploy
+
+## 17. Conclusão
+
+## 18. Próximo Livro (Tópicos Avançados)
+
+Apesar de que com o conteudo desse livro já ser possível criar sistemas complexos e funcionais, o Rails ainda fornece muito mais ferramentas para deixar seus sistemas ainda mais incríveis e serão esses tópicos avançados que esatei focando no meu próximo livro: "Aprenda Rails da Maneira Fácil - Tópicos Avançados"
+
+* Adicionando um Pipeline de Deploy
+* Adicionando um usuário
+* Adicionando Fotos dos Itens
+* Compartilhando Lista Entre Usuários
+* Atualizando a tela dinamicamente
+* Sincronizando tela entre usuários
+* Gerando uma aplicação mobile
+
+-----
+
+1. https://blog.ploeh.dk/2014/08/07/why-dry/
+2. https://guides.rubyonrails.org/layouts_and_rendering.html#using-partials
+3. https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction
+4. https://stackoverflow.com/a/6823266
