@@ -350,7 +350,7 @@ Foi escolhido então o desafio de desenvolver uma lista de mercado, pois é um p
 O rails vem com uma série de comandos de terminal que agilizam muito o desenvolvimento do sistema, o primeiro dele é o que gera o template de um novo projeto.
 
 ```sh
-rails new rails new simple_market_list
+rails new simple_market_list
 ```
 
 Com esse comando, o rails irá criar a estrutura de diretórios da sua aplicação, além disso, irá instalar mais algumas dependências necessárias para o seu projeto rodar. Sejam as dependências de backend, as gemas, seja dependências do frontend, com o yarn.
