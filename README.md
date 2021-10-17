@@ -72,6 +72,7 @@
   - [12.2. Atualizando um Registro](#122-atualizando-um-registro)
 - [13. Adicionando Itens a Lista](#13-adicionando-itens-a-lista)
   - [13.1. Tela de visualização de Lista de Mercado](#131-tela-de-visualização-de-lista-de-mercado)
+    - [13.1.1. Action show](#1311-action-show)
   - [13.2. Relacionando Modelos](#132-relacionando-modelos)
   - [13.3. Interagindo com os Itens](#133-interagindo-com-os-itens)
 - [14. Deletando uma lista Inteira](#14-deletando-uma-lista-inteira)
@@ -94,23 +95,23 @@ E por fim, gostaria de agradecer ao meu pai e minha mãe, por todo o investiment
 
 A década de 2000 começou com o grande estouro da bolha “.com”, porém não foi esse evento que determinou o descarrilhamento da mesma, muito pelo contrário.
 
-Após esse evento começou o que considero a década de ouro da internet e do desenvolvimento de software. Tivemos logo em sequência a assinatura do documento mais importante do século, o famoso manifesto ágil (que assim como a internet também saiu dos trilhos).
+Após esse evento começou o que considero a década de ouro da internet e do desenvolvimento de software. Tivemos logo em sequência a assinatura do documento mais importante do século, o famoso manifesto ágil [(que assim como a internet também saiu dos trilhos)](https://pragdave.me/blog/2014/03/04/time-to-kill-agile.html).
 
 Esse documento nos mostrou como devemos desenvolver software, colocou no papel, em poucas palavras, o que devemos valorizar mais e os princípios que devemos seguir.
 
-Junto com ele, poucos anos depois, surge o Rails, framework que colocou em um único lugar as convenções que um software web de deveria seguir. Fazendo com que o desenvolvedor tivesse que focar no seu negócio ao invés de ter que tomar dezenas de micro-decisões técnicas que geram nenhum valor para o cliente final, mas que são necessárias para por um software de pé.
+Junto com ele, poucos anos depois, surge o Rails, framework que colocou em um único lugar as convenções que um software web de deveria seguir. Fazendo com que o desenvolvedor conseguisse focar no seu negócio ao invés de ter que tomar dezenas de micro-decisões técnicas que geram nenhum valor para o cliente final, mas que são necessárias para por um software de pé.
 
 Esses 2 acontecimentos no início da década permitiram um boom de surgimento de novas startups que sem dúvida mudaram o mundo: Twitter, Github, Shopify, Gitlab, Groupon e Airbnb para citar algumas...
 
 Porém, mais um evento importante ocorreu na década de 2000, o surgimento do V8. O motor de JavaScript do Google permitiu que a linguagem que antes era destina a manipular o DOM da página HTML, funcionasse também no servidor e extremamente rápido.
 
-Com o V8 em mãos, os desenvolvedores decidiram que era hora de mudar tudo, criaram o nodeJs e rapidamente reescreveram (várias vezes cada uma) suas ferramentas favoritas em JavaScript, porém sem nunca gerar convenções, forçando com que cada novo projeto, um mundo de coisas tenham que ser configuradas em conjunto.
+Com o V8 em mãos, os desenvolvedores decidiram que era hora de mudar tudo, criaram o nodeJs e rapidamente [reescreveram](https://dayssincelastjavascriptframework.com/) (várias vezes cada uma) suas ferramentas favoritas em JavaScript, porém sem nunca gerar convenções, forçando com que cada novo projeto, [um mundo de coisas tenham que ser configuradas em conjunto](https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f).
 
-Em conjunto com a quebra de convenções no backend, surgiu o Angular e com ele veio junto o conceito de Single Page Aplication (SPA). A ideia era que ao invés deixar o browser controlar as navegações entre páginas, que causavam o mesmo ter que reinterpretar todo o JavaScript/CSS novamente. Você baixava todo o JavaScript uma única vez e por meio do próprio JavaScript você fazia esse controle do que mostrar ou não da página, indo no servidor somente para consultar dados.
+Em conjunto com a quebra de convenções no backend, surgiu o Angular e com ele veio junto o conceito de Single Page Aplication (SPA). A ideia era que ao invés deixar o browser controlar as navegações entre páginas, que causavam o mesmo ter que reinterpretar todo o JavaScript/CSS novamente. Você baixava todo o JavaScript uma única vez e por meio do próprio JavaScript você faz esse controle do que mostrar ou não da página, indo no servidor somente para consultar dados.
 
-Resumindo o SPA, alguém teve a brilhante ideia de reescreve o que o browser já fazia bem em JavaScript, gerando tantos problemas quanto você pode imaginar.
+Resumindo o SPA, alguém teve a brilhante ideia de reescreve o que o browser já fazia bem em JavaScript, gerando [tantos problemas](https://medium.com/@jmanrubia/escaping-the-spa-rabbit-hole-with-turbolinks-903f942bf52c) quanto você pode imaginar.
 
-E a partir daí, o desenvolvimento web passou a ser reescrever libs para resolver problemas que antes não existiam.
+E a partir daí, o desenvolvimento web passou a ser reescrever libs para resolver problemas que [antes não existiam](https://svelte.dev/blog/virtual-dom-is-pure-overhead).
 
 ---
 
@@ -121,6 +122,8 @@ E a partir daí, o desenvolvimento web passou a ser reescrever libs para resolve
 3. https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f
 
 4. https://medium.com/@jmanrubia/escaping-the-spa-rabbit-hole-with-turbolinks-903f942bf52c
+
+5. https://svelte.dev/blog/virtual-dom-is-pure-overhead
 
 ### 2.2. Trazendo a simplicidade de Volta
 
@@ -2954,9 +2957,95 @@ rails test
   simple_market_list/coverage. 35 / 35 LOC (100.0%) covered.
 ```
 
+Um dado "legal" de se  verificar, depois do cominho percorrido é quantas linhas de código já escrevemos.
+Conseguimos ver isso com o comando ```rails stats```.
+
+```sh
+rails stats
++----------------------+--------+--------+---------+---------+-----+-------+
+| Name                 |  Lines |    LOC | Classes | Methods | M/C | LOC/M |
++----------------------+--------+--------+---------+---------+-----+-------+
+| Controllers          |     42 |     32 |       2 |       5 |   2 |     4 |
+| Helpers              |      8 |      4 |       0 |       0 |   0 |     0 |
+| Jobs                 |      9 |      2 |       1 |       0 |   0 |     0 |
+| Models               |      8 |      6 |       2 |       0 |   0 |     0 |
+| Mailers              |      6 |      4 |       1 |       0 |   0 |     0 |
+| Channels             |     12 |      8 |       2 |       0 |   0 |     0 |
+| JavaScript           |     24 |     11 |       0 |       0 |   0 |     0 |
+| Libraries            |      0 |      0 |       0 |       0 |   0 |     0 |
+| Controller tests     |    132 |    107 |       1 |      13 |  13 |     6 |
+| Helper tests         |      0 |      0 |       0 |       0 |   0 |     0 |
+| Model tests          |     11 |      9 |       1 |       2 |   2 |     2 |
+| Mailer tests         |      0 |      0 |       0 |       0 |   0 |     0 |
+| Channel tests        |     15 |      5 |       1 |       0 |   0 |     0 |
+| Integration tests    |      0 |      0 |       0 |       0 |   0 |     0 |
+| System tests         |      0 |      0 |       0 |       0 |   0 |     0 |
++----------------------+--------+--------+---------+---------+-----+-------+
+| Total                |    267 |    188 |      11 |      20 |   1 |     7 |
++----------------------+--------+--------+---------+---------+-----+-------+
+  Code LOC: 67     Test LOC: 121     Code to Test Ratio: 1:1.8
+```
+
+Chegamos nessa etapa do livro, como todo o cadastro da lista de mercado, algumas validações, restrições no banco de dados, 100% de cobertura de testes, com 188 linhas de código escrita, 267 se considerarmos as linhas que o Rails escreveu para a gente.
+
+Um custo muito barato por todas as funcionalidades que já temos.
+
 ## 13. Adicionando Itens a Lista
 
+Agora, uma lista de mercado sem os itens que você precisa comprar não serve para muita coisa. E é isso que vamos tratar nesse capítulo.
+
+A nossa ideia é que cada lista possa ter seus próprios itens.
+
 ### 13.1. Tela de visualização de Lista de Mercado
+
+Para iniciar o nosso projeto, vamos criar um link na nossa tela que lista as listas de mercado que leve para o conjunto de itens.
+
+Assim como temos o nosso botão editar, vamos adicionar um botão de "visualizar".
+
+Vamos editar o nosso teste de mostrar o botão de editar para mostrar também o botão de 'visualizar
+
+```rb
+  (...)
+  test 'Should show edit and show link on market list index' do
+    get market_lists_path
+    assert_response :success
+
+    MarketList.all.each do |ml|
+      assert_select "a[href='/market_lists/#{ml.id}/edit']"
+      assert_select "a[href='/market_lists/#{ml.id}']"
+    end
+  end
+  (...)
+```
+
+Com essa edição, voltar a ter um teste quebrando, para arruma-lo, iremos editar novamente a nossa view ```index.html.erb```
+
+```html
+(...)
+  <td><%= ml.id %></td><td><%= ml.name %></td><td><%= l ml.market_date %></td><td><%= link_to 'Visualizar', market_list_path(ml) %> | <%= link_to 'Editar', edit_market_list_path(ml) %></td>
+(...)
+```
+
+Utilizei a rota que leva para a action show do nosso controlador.
+
+#### 13.1.1. Action show
+
+A action show é a responsável por mostrar os detalhes de um único recurso da sua aplicação (conceito explicado no capítulo 8). Nesse momento, assim como ocorreu com as outras rotas, a mesma ainda não está implementada no nosso controlador.
+
+Como requisito para essa tela de index, temos que a mesma deve ter:
+
+1. [O nome e a data da lista de mercado selecionada](https://www.nngroup.com/articles/visibility-system-status/)
+2. [Um botão de voltar para a tela anterior](https://www.nngroup.com/articles/user-control-and-freedom/)
+3. [Uma mensagem informando que nenhum item está cadastrado até o momento](https://signalvnoise.com/archives/000375.php)
+4. Um botão para cadastrar um novo item
+
+....
+
+---
+
+1. https://www.nngroup.com/articles/visibility-system-status/
+2. https://www.nngroup.com/articles/user-control-and-freedom/
+3. https://signalvnoise.com/archives/000375.php
 
 ### 13.2. Relacionando Modelos
 
