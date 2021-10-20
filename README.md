@@ -85,7 +85,7 @@
 
 Gostaria primeiramente de agradecer a minha esposa, Paula, que meu apoiou não só a criar esse livro, mas durante toda a minha carreira que me trouxe até aqui.
 
-Também queria agradecer a todas as pessoas com as quais eu já trabalhei e aos professores que me ajudaram a chegar até aqui. Esse livro nada mais é do que um compilado do que eu aprendi com as pessoas incríveis que me sercaram durante todo esse período.
+Também queria agradecer a todas as pessoas com as quais eu já trabalhei e aos professores que me ajudaram a chegar até aqui. Esse livro nada mais é do que um compilado do que eu aprendi com as pessoas incríveis que me cercaram durante todo esse período.
 
 E por fim, gostaria de agradecer ao meu pai e minha mãe, por todo o investimento em educação que ambos fizeram des do dia que nasci. Sou privilegiado por isso e esse livro é uma tentativa de devolver um pouco ao mundo todo esse privilégio.
 
