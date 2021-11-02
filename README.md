@@ -73,6 +73,7 @@
 - [13. Adicionando Itens a Lista](#13-adicionando-itens-a-lista)
   - [13.1. Tela de visualização de Lista de Mercado](#131-tela-de-visualização-de-lista-de-mercado)
     - [13.1.1. Action show](#1311-action-show)
+    - [13.1.2. Before Action no Controller](#1312-before-action-no-controller)
   - [13.2. Relacionando Modelos](#132-relacionando-modelos)
   - [13.3. Interagindo com os Itens](#133-interagindo-com-os-itens)
 - [14. Deletando uma lista Inteira](#14-deletando-uma-lista-inteira)
@@ -3039,13 +3040,170 @@ Como requisito para essa tela de index, temos que a mesma deve ter:
 3. [Uma mensagem informando que nenhum item está cadastrado até o momento](https://signalvnoise.com/archives/000375.php)
 4. Um botão para cadastrar um novo item
 
-....
+Vamos começar novamente escrevendo os nossos testes no controller ```test/controllers/market_lists_controller_test.rb```
+
+```rb
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class MarketListsControllerTest < ActionDispatch::IntegrationTest
+  (...)
+  test 'Should show current market list details' do
+    market_list = market_lists(:one)
+    get market_list_path(market_list)
+    assert_response :success
+    assert_select 'h1', text: "#{market_list.name} - #{I18n.l market_list.market_date}"
+  end
+
+  test 'Should show back button' do
+    market_list = market_lists(:one)
+    get market_list_path(market_list)
+    assert_response :success
+    assert_select 'a[href=?]', market_lists_path
+  end
+
+  test "Should show you don't have any itens message if don't have any item" do
+    market_list = market_lists(:one)
+    get market_list_path(market_list)
+    assert_response :success
+    assert_select 'p', text: 'Você ainda não possui nenhum item para essa lista'
+  end
+
+  test 'Should show new item button' do
+    market_list = market_lists(:one)
+    get market_list_path(market_list)
+    assert_response :success
+    assert_select 'a[href=?]', new_market_list_market_list_item_path(market_list), text: 'Novo item'
+  end
+end
+```
+
+Rodando os nossos testes, temos que nossos 4 testes estão quebrando pois nossa action ```show``` não existe ainda.
+Para resolver esse problema, vamos criar a mesma em branco.
+
+```rb
+# frozen_string_literal: true
+
+class MarketListsController < ApplicationController
+  (...)
+  def show
+  end
+end
+```
+
+Agora, nossos 4 testes apontam que o arquivo da view não foi encontrado, vamos criar o mesmo em branco na localização: ```app/views/market_lists/show.html.erb```
+
+Agora nossos testes mostram que os elementos esperandos não existem, vamos adicionalos:
+
+```html
+<h1><%= @market_list.name %> - <%= I18n.l @market_list.market_date %></h1>
+
+<%= link_to 'Voltar', market_lists_path %>
+<%= link_to 'Novo item', new_market_list_market_list_item_path(@market_list) %>
+
+<p>Você ainda não possui nenhum item para essa lista</p>
+```
+
+Ao rodar os nossos testes, o nosso h1 não funciona, pois não temos ainda a variável @market_list inicializada no nosso controller.
+Vamos arrumar esse ponto.
+
+```rb
+# frozen_string_literal: true
+
+class MarketListsController < ApplicationController
+  (...)
+  def show
+    @market_list = MarketList.find(params[:id])
+  end
+end
+```
+
+Rodando os nossos testes, temos que o único erro é que a url de ```new_market_list_market_list_item_path``` não existe. Vamos editar nosso arquivo ```router.rb``` para adicionar.
+
+```rb
+# frozen_string_literal: true
+
+Rails.application.routes.draw do
+  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+
+  resources :market_lists do
+    resources :market_list_items
+  end
+
+  root to: 'market_lists#index'
+end
+```
+
+Diferente das primeiros rotas que geramos nesse livro, agora queremos acessar um recurso, dentro de outro recurso. Não queremos simplesmente adicionar um novo item, queremos adicionar um novo item dentro de uma lista. E para isso, o Rails fornece o que ele chama de [Nested Resource](https://guides.rubyonrails.org/routing.html#nested-resources).
 
 ---
 
 1. https://www.nngroup.com/articles/visibility-system-status/
 2. https://www.nngroup.com/articles/user-control-and-freedom/
 3. https://signalvnoise.com/archives/000375.php
+4. https://guides.rubyonrails.org/routing.html#nested-resources
+
+#### 13.1.2. Before Action no Controller
+
+Ao analisar o nosso controller, percebi que temos algumas actions que buscam no banco usando o ID. Copiar e colar essa mesma linha de código em todas as actions não é muito DRY. Para reutilizar melhor esse código, podemos usar os [filtros de controller](https://guides.rubyonrails.org/action_controller_overview.html#filters).
+
+No nosso caso, vamos usar o ```before_action``` que na pratica executa antes de chamar qualquer action.
+
+Nesse momento, todos os nossos testes devem estar passando
+
+```rb
+# frozen_string_literal: true
+
+class MarketListsController < ApplicationController
+  before_action :find_market_list, only: [:show, :edit, :update]
+
+  (...)
+
+  def edit; end
+
+  def update
+    @market_list.attributes = params.require(:market_list).permit(:name, :market_date)
+
+    if @market_list.save
+      flash[:success] = 'Lista editada com Sucesso'
+      redirect_to action: :index
+    else
+      render :edit
+    end
+  end
+
+  def show; end
+
+  protected
+
+  def find_market_list
+    @market_list = MarketList.find(params[:id])
+  end
+end
+```
+
+Rodando os testes novamente:
+
+```sh
+rails test test/controllers/market_lists_controller_test.rb
+Running via Spring preloader in process 252449
+Run options: --seed 41755
+
+# Running:
+
+.................
+
+Finished in 0.604620s, 28.1168 runs/s, 87.6583 assertions/s.
+17 runs, 53 assertions, 0 failures, 0 errors, 0 skips
+Coverage report generated for Minitest, Minitest-0, Minitest-1, Minitest-2, Minitest-3 to /home/victorcampos/Workspace/v360/simple_market_list/coverage. 38 / 38 LOC (100.0%) covered.
+```
+
+Podemos seguir em frente.
+
+---
+
+1. https://guides.rubyonrails.org/action_controller_overview.html#filters
 
 ### 13.2. Relacionando Modelos
 
