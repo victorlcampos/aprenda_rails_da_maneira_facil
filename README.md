@@ -144,7 +144,7 @@ Não iremos cobrir nesse livro a sintaxe em si, mas tentaremos escrever código 
 
 ## 4. Como ler esse livro?
 
-### 4.1. Pratico
+### 4.1. Prático
 
 Eu não sei se acredito na teoria das 10 mil horas, porém tenho plena convicção que programação é uma atividade que demanda prática. “Quando você já resolveu 1000 casos, fica fácil resolver o 1001” Sherlock Holmes
 
