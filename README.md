@@ -104,7 +104,7 @@ Junto com ele, poucos anos depois, surge o Rails, framework que colocou em um ú
 
 Esses 2 acontecimentos no início da década permitiram um boom de surgimento de novas startups que sem dúvida mudaram o mundo: Twitter, Github, Shopify, Gitlab, Groupon e Airbnb para citar algumas...
 
-Porém, mais um evento importante ocorreu na década de 2000, o surgimento do V8. O motor de JavaScript do Google permitiu que a linguagem que antes era destina a manipular o DOM da página HTML, funcionasse também no servidor e extremamente rápido.
+Porém, mais um evento importante ocorreu na década de 2000, o surgimento do V8. O motor de JavaScript do Google permitiu que a linguagem que antes era destinada a manipular o DOM da página HTML, funcionasse também no servidor e extremamente rápido.
 
 Com o V8 em mãos, os desenvolvedores decidiram que era hora de mudar tudo, criaram o nodeJs e rapidamente [reescreveram](https://dayssincelastjavascriptframework.com/) (várias vezes cada uma) suas ferramentas favoritas em JavaScript, porém sem nunca gerar convenções, forçando com que cada novo projeto, [um mundo de coisas tenham que ser configuradas em conjunto](https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f).
 
