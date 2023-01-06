@@ -108,9 +108,9 @@ Porém, mais um evento importante ocorreu na década de 2000, o surgimento do V8
 
 Com o V8 em mãos, os desenvolvedores decidiram que era hora de mudar tudo, criaram o nodeJs e rapidamente [reescreveram](https://dayssincelastjavascriptframework.com/) (várias vezes cada uma) suas ferramentas favoritas em JavaScript, porém sem nunca gerar convenções, forçando com que cada novo projeto, [um mundo de coisas tenham que ser configuradas em conjunto](https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f).
 
-Em conjunto com a quebra de convenções no backend, surgiu o Angular e com ele veio junto o conceito de Single Page Aplication (SPA). A ideia era que ao invés deixar o browser controlar as navegações entre páginas, que causavam o mesmo ter que reinterpretar todo o JavaScript/CSS novamente. Você baixava todo o JavaScript uma única vez e por meio do próprio JavaScript você faz esse controle do que mostrar ou não da página, indo no servidor somente para consultar dados.
+Em conjunto com a quebra de convenções no backend, surgiu o Angular e com ele veio junto o conceito de Single Page Aplication (SPA). A ideia era que ao invés de deixar o browser controlar as navegações entre páginas, que causavam o mesmo de ter que reinterpretar todo o JavaScript/CSS novamente. Você baixava todo o JavaScript uma única vez e por meio do próprio JavaScript você faz esse controle do que mostrar ou não da página, indo no servidor somente para consultar dados.
 
-Resumindo o SPA, alguém teve a brilhante ideia de reescreve o que o browser já fazia bem em JavaScript, gerando [tantos problemas](https://medium.com/@jmanrubia/escaping-the-spa-rabbit-hole-with-turbolinks-903f942bf52c) quanto você pode imaginar.
+Resumindo o SPA, alguém teve a brilhante ideia de reescrever o que o browser já fazia bem em JavaScript, gerando [tantos problemas](https://medium.com/@jmanrubia/escaping-the-spa-rabbit-hole-with-turbolinks-903f942bf52c) quanto você pode imaginar.
 
 E a partir daí, o desenvolvimento web passou a ser reescrever libs para resolver problemas que [antes não existiam](https://svelte.dev/blog/virtual-dom-is-pure-overhead).
 
