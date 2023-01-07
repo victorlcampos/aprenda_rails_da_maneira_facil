@@ -164,7 +164,7 @@ Infelizmente a internet ainda é escrita primariamente em inglês, mas sempre qu
 
 O Ruby é uma linguagem dinâmica, fortemente tipada porém com tipagem implícita, conhecida por buscar [maximizar a felicidade do programador](https://rubyonrails.org/doctrine/#optimize-for-programmer-happiness). Foi criada em 1995, no Japão, mas mesmo assim ganhou o ocidente por conta da capacidade que ela dá para o desenvolvedor se expressar.
 
-Difernete do Python que busca ter uma única maneira de fazer algo, o Ruby buscar das as ferramentas necessárias para o desenvolvedor se expressar através de código.
+Difernete do Python que busca ter uma única maneira de fazer algo, o Ruby buscar dar as ferramentas necessárias para o desenvolvedor se expressar através de código.
 
 ---
 
